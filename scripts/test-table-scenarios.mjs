@@ -185,6 +185,8 @@ const blindSetup=html.match(/<select id="startBlind">([\s\S]*?)<\/select>/)?.[1]
 const blindOptions=[...blindSetup.matchAll(/<option value="(\d+)"[^>]*>\$(\d+) \/ \$(\d+)<\/option>/g)]
   .map(([,value,sb,bb])=>({value:Number(value),sb:Number(sb),bb:Number(bb)}));
 assert.equal(blindOptions.length,4,'expected four starting-blind options');
+assert.match(blindSetup,/<option value="20" selected>\$10 \/ \$20<\/option>/,
+  'the starting-blind selector must default to $10 / $20');
 for(const option of blindOptions){
   assert.equal(option.value,option.bb,'starting-blind option values must be display-dollar amounts');
   assert.equal(option.sb,option.bb/2,'starting-blind labels must use a 1:2 blind ratio');

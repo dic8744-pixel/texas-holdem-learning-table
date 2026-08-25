@@ -133,9 +133,9 @@ const VIEWPORT = { width: 844, height: 390 };
       blindConfig, blinds, blindText, potText,
       pass:
         mobile && lls && n === 6 && overlaps === 0 && centerOverlaps.length === 0 &&
-        cardW >= 48 && namePx >= 13 && blindConfig === 500 &&
-        blinds[0] === 250 && blinds[1] === 500 && blindText === '$50/$100' &&
-        potText === 'Pot: $150 · 1.5 BB',
+        cardW >= 48 && namePx >= 13 && blindConfig === 100 &&
+        blinds[0] === 50 && blinds[1] === 100 && blindText === '$10/$20' &&
+        potText === 'Pot: $30 · 1.5 BB',
     };
   });
 
@@ -167,5 +167,8 @@ const VIEWPORT = { width: 844, height: 390 };
   await portraitPage.close();
   await browser.close();
   if(server)await new Promise(resolve=>server.close(resolve));
-  process.exit(raiseStepMetrics.pass&&deckMetrics.pass&&metrics.pass&&portraitMetrics.pass ? 0 : 1);
+  process.exit(
+    blindSelection.value === '20' && blindSelection.label === '$10 / $20' &&
+    raiseStepMetrics.pass && deckMetrics.pass && metrics.pass && portraitMetrics.pass ? 0 : 1
+  );
 })();
