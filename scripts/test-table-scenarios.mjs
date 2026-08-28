@@ -75,6 +75,26 @@ const result=vm.runInContext(`(()=>{
     throw new Error('multiplayer bot profiles missing');
   if(state.players[1].style||state.players[2].style)throw new Error('remote humans received bot profiles');
 
+  const sevenRemotes=Array.from({length:7},(_,i)=>({name:'Remote '+(i+1),seat:i+2}));
+  newGame({...base,numPlayers:9,tableScenario:'balanced',mpRemotes:sevenRemotes});
+  state.players[1].chips=25;
+  const lateJoinMessages=[];
+  const lateJoinConn={open:true,send:d=>lateJoinMessages.push(d),close:()=>{}};
+  MP={role:'host',started:true,conns:[],pending:[],myName:'Host'};
+  mpHostData(lateJoinConn,{t:'hello',n:'Invited friend',v:MP_V});
+  if(MP.pending.length!==1||lateJoinMessages[0]?.t!=='wait')
+    throw new Error('full bot table rejected an invited human '+JSON.stringify(lateJoinMessages));
+  if(mpLateJoinCapacity()!==0)
+    throw new Error('a pending human did not reserve the last replaceable bot seat');
+  mpSeatPending();
+  const replacement=state.players[1];
+  if(state.players.length!==9||replacement.name!=='Invited friend'||!replacement.remote||replacement.style||MP.conns[0]?.seat!==1)
+    throw new Error('invited human did not replace the shortest-stacked bot');
+  if(lateJoinMessages.map(d=>d.t).join(',')!=='wait,start')
+    throw new Error('invited human received the wrong join sequence '+JSON.stringify(lateJoinMessages));
+  const lateJoinReplacement={seat:replacement.i,name:replacement.name,players:state.players.length};
+  MP=null;
+
   for(const id of ['balanced','tight','loose','aggressive','wild','custom']){
     for(const bots of [1,2,3,5,8]){
       const counts=tableScenarioCounts(id,bots,id==='custom'?tableCustom:null);
@@ -172,7 +192,7 @@ const result=vm.runInContext(`(()=>{
   if(visibleCounterfactuals.length!==1||visibleCounterfactuals[0].stage!=='flop')
     throw new Error('solver decisions must not receive heuristic counterfactual explanations');
 
-  return {actual,balanced,custom,fallback,randomIds,multiplayerBots:multiplayerBots.map(p=>p.style.id),
+  return {actual,balanced,custom,fallback,randomIds,multiplayerBots:multiplayerBots.map(p=>p.style.id),lateJoinReplacement,
     blindDisplay,raisedBlindDisplay,tournamentBlinds,cashBlinds,screenshotExample,
     soundPacks:Object.fromEntries(soundPacks.map(pack=>[pack,soundKinds.length])),replayJumps,
     adaptivePlan:{priority:planBefore.map(r=>r.spot),masteryBefore:planBefore[1].mastery,masteryAfter:pfAfter.mastery},
