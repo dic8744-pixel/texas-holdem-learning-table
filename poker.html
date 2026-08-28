@@ -465,6 +465,7 @@ body.frame-crown .seat.human .plate{border-color:#f7d779;box-shadow:0 0 22px rgb
 
 /* ---------- ACTION BAR ---------- */
 #actionbar{background:var(--panel);border-top:1px solid var(--line);padding:12px 18px;min-height:88px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:relative;z-index:40;}
+#humanCtls{display:flex;align-items:center;gap:14px;flex:1;}
 #actionbar .btn{border:none;border-radius:10px;padding:13px 26px;font-size:15px;font-weight:700;cursor:pointer;color:#fff;flex-shrink:0;white-space:nowrap;}
 #foldBtn{background:var(--red);}
 #callBtn{background:var(--blue);}
@@ -839,159 +840,170 @@ body.four-color .scenario-deck-card.suit-c{color:#16723a;}
 #actFab{display:none;}
 @keyframes actPulse{0%,100%{box-shadow:0 4px 18px rgba(232,182,76,.35)}50%{box-shadow:0 4px 30px rgba(232,182,76,.85)}}
 
-/* forced landscape on phones: the game is rotated 90° when the device is held portrait.
-   The rotated frame is short and wide — the action bar must be ONE slim row, not stacked. */
-body.fl{overflow:hidden;}
-body.fl #game{position:fixed;top:0;left:0;transform-origin:left top;z-index:10;box-sizing:border-box;
-  padding-left:max(8px,env(safe-area-inset-top));padding-right:max(12px,env(safe-area-inset-right),env(safe-area-inset-bottom));}
-/* in rotated mode the coach sheet must size against the ROTATED frame, not physical vh */
+/* One phone-landscape presentation is used in both physical orientations. `fl`
+   only rotates a portrait layout viewport; it never chooses a different table UI. */
+body.phone-landscape{
+  overflow:hidden;
+  --phone-safe-start:env(safe-area-inset-left);
+  --phone-safe-end:env(safe-area-inset-right);
+  --phone-safe-bottom:env(safe-area-inset-bottom);
+}
+body.phone-landscape.fl{
+  --phone-safe-start:env(safe-area-inset-top);
+  --phone-safe-end:env(safe-area-inset-bottom);
+  --phone-safe-bottom:max(env(safe-area-inset-left),env(safe-area-inset-right));
+}
+body.fl #game{position:fixed;top:0;left:0;transform-origin:left top;z-index:10;box-sizing:border-box;}
+/* in rotated mode overlays size against the logical landscape frame, not physical vh */
 body.fl #coach{max-height:calc(100% - 14px);}
 body.fl #chartOv .rp-card{max-height:92%;overflow-y:auto;}
 body.fl #overlay .over-card{max-height:92%;overflow-y:auto;}
-body.fl #topbar{
-  padding:4px 6px;
-  padding-right:max(10px,env(safe-area-inset-right));
-  scroll-padding-right:max(16px,env(safe-area-inset-right));
-  font-size:10px;
-  gap:7px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  flex-wrap:nowrap;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  flex-shrink:0;
-}
-body.fl #topbar::-webkit-scrollbar{display:none;}
-body.fl #topbar .tb-touch{min-height:32px;padding:2px 6px;margin:0;gap:6px;}
-body.fl #topbar .tb-touch input{width:18px;height:18px;}
-body.fl #quitBtn{flex-shrink:0;margin-left:4px;padding:5px 10px;}
-body.fl #sndBtn,body.fl #langTop{flex-shrink:0;padding:3px 7px;font-size:11px;}
-/* forced-landscape phone view keeps only the betting controls at the bottom */
-html body.fl #topbar{
-  display:none!important;
-}
-body.fl #waitMsg{display:none;}
-body.fl #tableWrap{padding:2px 4px;flex:1;min-height:0;overflow:hidden;}
-body.fl #felt{inset:6px 8px 8px 8px;border-width:6px;}
-/* showdown: opponents' revealed cards use compact size so the taller seats still fit */
-body.fl .seat.revealed .card{width:34px;height:48px;border-radius:5px;}
-body.fl .seat.revealed .card .pip{font-size:17px;}
-body.fl .seat.revealed .hole{min-height:48px;}
-body.fl .seat{width:124px;margin-left:-62px;margin-top:0;transform:scale(var(--seatScale,1));transform-origin:center top;}
-body.fl .seat .plate{gap:6px;padding:6px 10px 6px 7px;border-radius:10px;min-width:0;}
-body.fl .seat .avatar{font-size:22px;}
-body.fl .seat .pname{font-size:14px;}
-body.fl .seat .pchips{font-size:12px;}
-body.fl .seat .pstyle{display:none;}
-body.fl .seat .ppos{font-size:10px;}
-body.fl .seat .lastact{font-size:12px;}
-body.fl .seat .lastact:empty,
-body.fl .tmr:empty{min-height:0;margin-top:0;}
-/* rotated landscape: hide opponent card backs — plates only; hero + active seat keep cards
-   (same as native lls) so the top seats don't overhang toward the screen edge */
-body.fl .seat .hole{display:none;min-height:0;margin:0;}
-body.fl .seat.human .hole{display:flex;min-height:60px;gap:4px;margin-bottom:4px;}
-body.fl .seat.revealed .hole{display:flex;min-height:48px;gap:4px;margin-bottom:4px;}
-body.fl .card{width:56px;height:80px;border-radius:7px;}
-body.fl .card .ix{font-size:14px;}
-body.fl .card .ix .si{font-size:10px;}
-body.fl .card .pip{font-size:29px;}
-body.fl .card.small{width:36px;height:52px;}
-body.fl .card.small .pip{font-size:18px;}
-body.fl #centerArea{top:50%;width:auto;max-width:min(94vw,420px);}
-/* rotated-portrait, post-flop: row layout so that after the game's 90° rotation the
-   pot reads BELOW the flop (instead of beside it, over a side seat). DOM order is
-   pot then board, so row-reverse renders board first (up-screen), pot last (down-screen). */
-body.fl #centerArea.has-board{display:flex;flex-direction:row-reverse;align-items:center;justify-content:center;gap:8px;width:auto;max-width:none;}
-body.fl #centerArea.has-board #pot{margin:0;}
-body.fl #centerArea.has-board #board{margin:0;}
-body.fl #board{min-height:0;gap:6px;min-width:calc(5*56px + 4*6px);}
-body.fl #board.has-cards{min-height:80px;}
-body.fl #pot{font-size:15px;white-space:nowrap;}
-/* native phone landscape (lls): oval like desktop, readable mobile sizes — no transform scale */
-body.lls #tableWrap{padding:2px 6px;flex:1;min-height:0;overflow:hidden;}
-body.lls #felt{inset:6px 8px 2px 8px;border-width:6px;}
-body.lls .seat{width:118px;margin-left:-59px;margin-top:-20px;}
-body.lls .seat.human,
-body.lls .seat.active{margin-top:-36px;}
-body.lls .seat .plate{gap:6px;padding:6px 10px 6px 7px;border-radius:11px;min-width:0;}
-body.lls .seat .avatar{font-size:22px;}
-body.lls .seat .pname{font-size:14px;}
-body.lls .seat .pchips{font-size:12px;}
-body.lls .seat .pstyle{display:none;}
-body.lls .seat .ppos{font-size:10px;}
-body.lls .seat .lastact{font-size:12px;}
-body.lls .seat .lastact:empty,
-body.lls .tmr:empty{min-height:0;margin-top:0;}
-/* landscape: hide opponent card backs — plates only; hero + active seat keep cards */
-body.lls .seat .hole{display:none;min-height:0;margin:0;}
-body.lls .seat.human .hole,
-body.lls .seat.active .hole,
-body.lls .seat.revealed .hole{display:flex;min-height:58px;gap:4px;margin-bottom:4px;}
-body.lls .card{width:54px;height:78px;border-radius:7px;}
-body.lls .card .ix{font-size:14px;}
-body.lls .card .ix .si{font-size:10px;}
-body.lls .card .pip{font-size:28px;}
-body.lls .card.small{width:36px;height:52px;}
-body.lls .card.small .pip{font-size:18px;}
-body.lls #centerArea{top:50%;width:auto;max-width:min(88vw,360px);}
-body.lls #board{min-height:0;gap:6px;min-width:calc(5*54px + 4*6px);}
-body.lls #board.has-cards{min-height:78px;}
-body.lls #pot{font-size:15px;white-space:nowrap;}
 
-/* native phone landscape: slim bottom action bar (same layout as rotated-portrait fl) */
-body.lls #actFab,body.lls #actBackdrop{display:none!important;}
-body.lls #actionbar{
-  flex-shrink:0;padding:7px 10px max(7px,env(safe-area-inset-bottom));gap:7px;
-  min-height:0;max-height:132px;overflow-y:auto;
-  flex-wrap:wrap;align-items:center;justify-content:center;
-}
-body.lls #actionbar>#logToggle,body.lls #actionbar>#replayBtn,
-body.lls #actionbar>#exportBtn,body.lls #actionbar>#aiReviewBtn,body.lls #actionbar>#emoBtn,
-body.lls #actionbar>#chatBtn,body.lls #humanCtls #coachToggle{display:none!important;}
-body.lls #waitMsg{flex-basis:100%;text-align:center;font-size:12px;color:var(--dim);margin:0;}
-body.lls #humanCtls{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;width:100%;flex:none;}
-body.lls #humanCtls.hidden{display:none;}
-body.lls #humanCtls #foldBtn,body.lls #humanCtls #callBtn,body.lls #raiseBtn{flex:1 1 auto;min-width:88px;max-width:150px;padding:13px 10px;font-size:15px;}
-body.lls #raiseBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;white-space:normal;line-height:1.08;}
-body.lls #raiseBtn .act-label{font-size:12px;margin-right:0;}
-body.lls #raiseBtn .act-amount{font-size:13px;}
-body.lls #raiseCtl{display:flex;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;flex-basis:100%;}
-body.lls #raiseCtl .preset{flex:none;padding:8px 11px;font-size:12px;}
-body.lls #raiseAmountWrap{flex:0 0 72px;}
-body.lls #raiseAmountLbl{display:none;}
-body.lls #raiseAmountInput{width:72px;height:34px;}
-body.lls #raiseAdjust{flex:1 1 230px;min-width:180px;gap:5px;}
-body.lls #raiseSlider{min-width:80px;height:26px;}
-body.lls .raise-step{height:34px;min-width:48px;padding:4px 6px;}
-
-/* very small phone landscapes: keep every raise control on one compact row */
-@media(max-width:600px) and (orientation:landscape){
-  body.lls #humanCtls{gap:6px;}
-  body.lls #humanCtls #foldBtn,body.lls #humanCtls #callBtn{padding:11px 8px;}
-  body.lls #raiseCtl{gap:5px;}
-  body.lls #raiseCtl .preset{padding:7px 7px;font-size:11px;}
-  body.lls #raiseAmountWrap{flex-basis:66px;}
-  body.lls #raiseAmountInput{width:66px;height:32px;padding:4px 5px;font-size:12px;}
-  body.lls #raiseAdjust{flex:1 1 150px;min-width:125px;gap:3px;}
-  body.lls #raiseSlider{min-width:55px;}
-  body.lls .raise-step{min-width:34px;width:34px;padding:3px;}
-  body.lls .raise-step-size{display:none;}
-  body.lls #humanCtls #raiseBtn{min-width:84px;padding:10px 7px;font-size:13px;}
-}
-
-/* native landscape: menu + actions stacked at the bottom, table fills the rest */
-body.lls #game{display:flex;flex-direction:column;}
-body.lls #tableWrap{order:0;}
-body.lls #topbar{
-  order:2;flex-shrink:0;
-  border-bottom:none;border-top:1px solid var(--line);
-  padding:6px 10px;padding-top:6px;
-  overflow-x:auto;flex-wrap:nowrap;white-space:nowrap;
+body.phone-landscape #game{display:flex;flex-direction:column;}
+body.phone-landscape #topbar{
+  order:0;display:flex!important;flex:0 0 40px;min-height:40px;max-height:40px;
+  padding:4px max(10px,var(--phone-safe-end)) 4px max(10px,var(--phone-safe-start));
+  border-top:0;border-bottom:1px solid var(--line);font-size:10px;gap:7px;
+  overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;white-space:nowrap;
   -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  scroll-padding-inline:max(16px,var(--phone-safe-start));
 }
-body.lls #topbar::-webkit-scrollbar{display:none;}
-body.lls #actionbar{order:3;}
+body.phone-landscape #topbar::-webkit-scrollbar{display:none;}
+body.phone-landscape #topbar .tb-touch{min-height:30px;padding:1px 5px;margin:0;gap:5px;}
+body.phone-landscape #topbar .tb-touch input{width:18px;height:18px;}
+body.phone-landscape #quitBtn{flex-shrink:0;margin-left:4px;padding:5px 10px;}
+body.phone-landscape #sndBtn,body.phone-landscape #langTop{flex-shrink:0;padding:3px 7px;font-size:11px;}
+
+body.phone-landscape #tableWrap{
+  order:1;flex:1;min-height:0;overflow:hidden;
+  padding:2px max(6px,var(--phone-safe-end)) 2px max(6px,var(--phone-safe-start));
+}
+body.phone-landscape #felt{inset:6px 8px 2px 8px;border-width:6px;}
+html body.phone-landscape .seat{width:118px;margin-left:-59px;margin-top:-20px;transform:scale(var(--seatScale,1));transform-origin:center top;}
+body.phone-landscape .seat.human,
+body.phone-landscape .seat.active{margin-top:-36px;}
+html body.phone-landscape .seat.human{
+  width:270px;margin-left:-135px;margin-top:-20px;
+  display:grid;grid-template-columns:max-content max-content;grid-template-rows:auto auto auto;
+  column-gap:7px;align-items:center;justify-content:center;
+}
+body.phone-landscape .seat.human .hole{grid-column:1;grid-row:1 / 4;align-self:center;margin:0;}
+body.phone-landscape .seat.human .plate{grid-column:2;grid-row:1;justify-self:center;}
+body.phone-landscape .seat.human .lastact{grid-column:2;grid-row:2;justify-self:center;margin-top:1px;}
+body.phone-landscape .seat.human .tmr{grid-column:2;grid-row:3;justify-self:center;}
+html body.phone-landscape .seat.revealed:not(.human){
+  width:168px;margin-left:-84px;margin-top:-20px;
+  display:grid;grid-template-columns:max-content max-content;grid-template-rows:auto auto auto;
+  column-gap:5px;align-items:center;justify-content:center;
+}
+body.phone-landscape .seat.revealed:not(.human) .hole{grid-column:1;grid-row:1 / 4;align-self:center;margin:0;}
+body.phone-landscape .seat.revealed:not(.human) .plate{grid-column:2;grid-row:1;justify-self:center;}
+body.phone-landscape .seat.revealed:not(.human) .lastact{grid-column:2;grid-row:2;justify-self:center;}
+body.phone-landscape .seat.revealed:not(.human) .tmr{grid-column:2;grid-row:3;justify-self:center;}
+body.phone-landscape .seat .plate{gap:6px;padding:6px 10px 6px 7px;border-radius:11px;min-width:0;}
+html body.phone-landscape .seat .avatar{font-size:22px;}
+html body.phone-landscape .seat .pname{font-size:14px;}
+html body.phone-landscape .seat .pchips{font-size:12px;}
+body.phone-landscape .seat .plate>div{min-width:0;}
+body.phone-landscape .seat:not(.human) .plate>div{max-width:72px;}
+body.phone-landscape .seat.human .plate>div{max-width:90px;}
+body.phone-landscape .seat .pname,
+body.phone-landscape .seat .pchips{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+html body.phone-landscape .seat .pstyle{display:none;}
+html body.phone-landscape .seat .ppos{font-size:10px;}
+html body.phone-landscape .seat .lastact{font-size:12px;}
+body.phone-landscape.phone-landscape-narrow .seat:not(.human) .avatar{display:none;}
+body.phone-landscape.phone-landscape-narrow .seat:not(.human) .plate{padding-inline:6px;}
+body.phone-landscape .seat .lastact:empty,
+body.phone-landscape .tmr:empty{min-height:0;margin-top:0;}
+body.phone-landscape .tmr{min-height:14px;font-size:13px;line-height:14px;}
+body.phone-landscape .tmr:not(:empty){border-width:1px;padding:0 7px;margin-top:1px;}
+/* Opponent backs stay hidden; the hero and showdown seats keep cards. */
+body.phone-landscape .seat .hole{display:none;min-height:0;margin:0;}
+body.phone-landscape .seat.human .hole,
+body.phone-landscape .seat.revealed .hole{display:flex;min-height:58px;gap:4px;margin-bottom:4px;}
+body.phone-landscape .seat.revealed .card{width:34px;height:48px;border-radius:5px;}
+body.phone-landscape .seat.revealed .card .pip{font-size:17px;}
+body.phone-landscape .seat.revealed .hole{min-height:48px;}
+body.phone-landscape .card{width:54px;height:78px;border-radius:7px;}
+body.phone-landscape .card .ix{font-size:14px;}
+body.phone-landscape .card .ix .si{font-size:10px;}
+body.phone-landscape .card .pip{font-size:28px;}
+body.phone-landscape .card.small{width:36px;height:52px;}
+body.phone-landscape .card.small .pip{font-size:18px;}
+body.phone-landscape #centerArea{top:50%;width:auto;max-width:min(88vw,360px);}
+body.phone-landscape #board{min-height:0;gap:6px;min-width:0;}
+body.phone-landscape #board.has-cards{min-height:78px;min-width:calc(5*54px + 4*6px);}
+body.phone-landscape #pot{font-size:15px;white-space:nowrap;margin-bottom:4px;}
+body.phone-landscape #potChips{display:none!important;}
+body.phone-landscape #banner:empty{min-height:0;margin:0;}
+
+/* A stable dock keeps the table geometry unchanged when controls appear/disappear. */
+body.phone-landscape #actFab,body.phone-landscape #actBackdrop{display:none!important;}
+html body.phone-landscape #actionbar{
+  order:2;position:relative;left:auto;right:auto;bottom:auto;top:auto;
+  flex:0 0 88px;width:100%;height:88px;min-height:88px;max-height:88px;
+  overflow:hidden;z-index:60;display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;
+  gap:5px;padding:4px max(8px,var(--phone-safe-end)) max(4px,var(--phone-safe-bottom)) max(8px,var(--phone-safe-start));
+  background:var(--panel);border-top:1px solid var(--line);box-shadow:0 -6px 22px rgba(0,0,0,.5);
+  visibility:visible!important;pointer-events:auto!important;
+}
+body.phone-landscape #actionbar>#logToggle,body.phone-landscape #actionbar>#replayBtn,
+body.phone-landscape #actionbar>#exportBtn,body.phone-landscape #actionbar>#aiReviewBtn,body.phone-landscape #actionbar>#emoBtn,
+body.phone-landscape #actionbar>#chatBtn,body.phone-landscape #humanCtls #coachToggle{display:none!important;}
+body.phone-landscape #waitMsg{text-align:center;font-size:12px;color:var(--dim);margin:0 6px;flex:0 0 auto;}
+body.phone-landscape #humanCtls{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:center;gap:5px;width:100%;flex:1 1 auto;min-width:0;}
+body.phone-landscape #humanCtls.hidden{display:none;}
+body.phone-landscape #humanCtls #foldBtn,body.phone-landscape #humanCtls #callBtn,body.phone-landscape #humanCtls #raiseBtn{flex:0 1 auto;min-width:56px;padding:8px 7px;font-size:13px;white-space:normal;line-height:1.08;}
+body.phone-landscape #raiseCtl{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:4px;flex:1 1 auto;min-width:0;}
+body.phone-landscape #raiseCtl .preset{flex:0 0 auto;padding:6px 6px;font-size:10.5px;}
+body.phone-landscape #raiseAmountWrap{flex:0 0 64px;}
+body.phone-landscape #raiseAmountLbl{display:none;}
+body.phone-landscape #raiseAmountInput{width:64px;height:30px;padding:4px 5px;font-size:11.5px;}
+body.phone-landscape #raiseAdjust{flex:1 1 130px;min-width:105px;gap:3px;}
+body.phone-landscape #raiseSlider{min-width:40px;height:24px;}
+body.phone-landscape .raise-step{min-width:30px;width:30px;height:30px;padding:3px;}
+body.phone-landscape .raise-step-size{display:none;}
+body.phone-landscape #raiseBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:92px;max-width:112px;overflow-wrap:anywhere;}
+body.phone-landscape #raiseBtn .act-label{font-size:11.5px;margin-right:0;}
+body.phone-landscape #raiseBtn .act-amount{font-size:12.5px;}
+
+/* The same compact dock thresholds apply to native and CSS-rotated small phones. */
+@media(max-width:600px) and (orientation:landscape),(max-height:600px) and (orientation:portrait){
+  body.phone-landscape #topbar{flex-basis:36px;min-height:36px;max-height:36px;padding-block:3px;}
+  body.phone-landscape #topbar .tb-touch{min-height:26px;}
+  html body.phone-landscape #actionbar{flex-basis:80px;height:80px;min-height:80px;max-height:80px;}
+  html body.phone-landscape .seat{width:100px;margin-left:-50px;}
+  html body.phone-landscape .seat.human{width:230px;margin-left:-115px;}
+  html body.phone-landscape .seat.revealed:not(.human){width:140px;margin-left:-70px;column-gap:4px;}
+  body.phone-landscape .seat .plate{gap:4px;padding:4px 6px 4px 5px;}
+  html body.phone-landscape .seat .avatar{font-size:19px;}
+  html body.phone-landscape .seat .pname{font-size:13px;}
+  html body.phone-landscape .seat .pchips{font-size:11px;}
+  html body.phone-landscape .seat .lastact{font-size:11px;}
+  body.phone-landscape .seat:not(.human) .plate>div{max-width:64px;}
+  body.phone-landscape .tmr{font-size:12px;line-height:13px;}
+  body.phone-landscape .card{width:44px;height:64px;}
+  body.phone-landscape .card .pip{font-size:23px;}
+  body.phone-landscape .seat.human .hole{min-height:64px;}
+  body.phone-landscape .seat.revealed .card{width:24px;height:36px;}
+  body.phone-landscape .seat.revealed .card .pip{font-size:14px;}
+  body.phone-landscape .seat.revealed .hole{min-height:36px;gap:2px;}
+  body.phone-landscape #board{gap:4px;}
+  body.phone-landscape #board .card{width:42px;height:60px;}
+  body.phone-landscape #board.has-cards{min-height:60px;min-width:calc(5*42px + 4*4px);}
+  body.phone-landscape #pot{font-size:13px;margin-bottom:2px;}
+  body.phone-landscape #humanCtls{gap:4px;}
+  body.phone-landscape #humanCtls #foldBtn,body.phone-landscape #humanCtls #callBtn{min-width:48px;padding:8px 5px;font-size:12px;}
+  body.phone-landscape #raiseCtl{gap:3px;}
+  body.phone-landscape #raiseCtl .preset{padding:6px 4px;font-size:10px;}
+  body.phone-landscape #raiseAmountWrap{flex-basis:56px;}
+  body.phone-landscape #raiseAmountInput{width:56px;height:28px;padding:3px 4px;font-size:11px;}
+  body.phone-landscape #raiseAdjust{min-width:86px;}
+  body.phone-landscape #raiseSlider{min-width:28px;}
+  body.phone-landscape .raise-step{min-width:27px;width:27px;}
+  body.phone-landscape #humanCtls #raiseBtn{min-width:82px;max-width:96px;padding:8px 5px;}
+}
 
 /* mobile landscape only: scrollable right panel inside #game (rotates with the table) */
 body.act-panel-mode #actFab{
@@ -1062,58 +1074,6 @@ body.act-panel-mode #raiseAmountInput{flex:1;width:auto;}
 body.act-panel-mode #raiseAdjust{width:100%;min-width:0;flex:none;}
 body.act-panel-mode #raiseSlider{width:100%;min-width:0;height:26px;}
 body.act-panel-mode #waitMsg{font-size:11px;width:100%;text-align:center;}
-
-/* rotated-portrait (fl): action controls live in an always-visible, readable bar
-   pinned to the screen bottom — OUTSIDE the rotated #game so the text stays upright.
-   #actionbar is reparented to <body> by JS when fl is active. */
-body.fl #actFab,body.fl #actBackdrop{display:none!important;}
-/* action bar pinned to the BOTTOM of the rotated frame (it rotates with the table, so it
-   reads in the same landscape orientation), spanning the full width as one slim row */
-html body.fl #actionbar{
-  position:relative;left:auto;right:auto;bottom:auto;top:auto;
-  flex-shrink:0;width:100%;
-  height:88px;min-height:0;max-height:88px;overflow:hidden;z-index:60;
-  display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;
-  gap:5px;padding:4px 8px;
-  background:var(--panel);border-top:1px solid var(--line);
-  box-shadow:0 -6px 22px rgba(0,0,0,.5);
-  visibility:visible!important;pointer-events:auto!important;
-}
-/* keep the bar focused on actions: hide secondary buttons (still available on desktop
-   / via the side panel: Coach, Log, history, reactions) */
-body.fl #actionbar>#logToggle,body.fl #actionbar>#replayBtn,
-body.fl #actionbar>#exportBtn,body.fl #actionbar>#aiReviewBtn,body.fl #actionbar>#emoBtn,
-body.fl #actionbar>#chatBtn,body.fl #humanCtls #coachToggle{display:none!important;}
-body.fl #waitMsg{text-align:center;font-size:12px;color:var(--dim);margin:0 6px;flex:0 0 auto;}
-body.fl #humanCtls{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;justify-content:center;gap:5px;width:100%;flex:1 1 auto;min-width:0;}
-body.fl #humanCtls.hidden{display:none;}
-body.fl #humanCtls #foldBtn,body.fl #humanCtls #callBtn,body.fl #humanCtls #raiseBtn{flex:0 1 auto;min-width:56px;padding:8px 7px;font-size:13px;white-space:normal;line-height:1.08;}
-body.fl #raiseCtl{display:flex;flex-direction:row;flex-wrap:nowrap;align-items:center;gap:4px;flex:1 1 auto;min-width:0;}
-body.fl #raiseCtl .preset{flex:0 0 auto;padding:6px 6px;font-size:10.5px;}
-body.fl #raiseAmountWrap{flex:0 0 64px;}
-body.fl #raiseAmountLbl{display:none;}
-body.fl #raiseAmountInput{width:64px;height:30px;padding:4px 5px;font-size:11.5px;}
-body.fl #raiseAdjust{flex:1 1 130px;min-width:105px;gap:3px;}
-body.fl #raiseSlider{min-width:40px;height:24px;}
-body.fl .raise-step{min-width:30px;width:30px;height:30px;padding:3px;}
-body.fl .raise-step-size{display:none;}
-body.fl #raiseBtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:92px;max-width:112px;overflow-wrap:anywhere;}
-body.fl #raiseBtn .act-label{font-size:11.5px;margin-right:0;}
-body.fl #raiseBtn .act-amount{font-size:12.5px;}
-
-/* short portrait phones are rotated by the app; compress the resulting landscape dock */
-@media(max-height:600px) and (orientation:portrait){
-  body.fl #humanCtls{gap:4px;}
-  body.fl #humanCtls #foldBtn,body.fl #humanCtls #callBtn{min-width:48px;padding:8px 5px;font-size:12px;}
-  body.fl #raiseCtl{gap:3px;}
-  body.fl #raiseCtl .preset{padding:6px 4px;font-size:10px;}
-  body.fl #raiseAmountWrap{flex-basis:56px;}
-  body.fl #raiseAmountInput{width:56px;height:28px;padding:3px 4px;font-size:11px;}
-  body.fl #raiseAdjust{min-width:86px;}
-  body.fl #raiseSlider{min-width:28px;}
-  body.fl .raise-step{min-width:27px;width:27px;}
-  body.fl #humanCtls #raiseBtn{min-width:82px;max-width:96px;padding:8px 5px;}
-}
 
 /* ================= MOBILE / TOUCH =================
    applies to phones AND any portrait screen up to 1024px (large phones, iPad,
@@ -1194,22 +1154,22 @@ body.fl #raiseBtn .act-amount{font-size:12.5px;}
   #dbtn{width:20px;height:20px;font-size:10px;}
 
   /* portrait mobile (no forced landscape): classic bottom action bar */
-  body:not(.act-panel-mode):not(.fl):not(.lls) #actionbar{padding:8px 8px max(8px,env(safe-area-inset-bottom));gap:7px;min-height:0;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #actionbar>#logToggle,
-  body:not(.act-panel-mode):not(.fl):not(.lls) #actionbar>#replayBtn,
-  body:not(.act-panel-mode):not(.fl):not(.lls) #actionbar>#exportBtn,
-  body:not(.act-panel-mode):not(.fl):not(.lls) #actionbar>#aiReviewBtn{padding:8px 10px;font-size:11px;flex:1;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #humanCtls{width:100%;flex-wrap:wrap;gap:8px;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #humanCtls #foldBtn,
-  body:not(.act-panel-mode):not(.fl):not(.lls) #humanCtls #callBtn{flex:1;padding:15px 8px;font-size:15px;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #raiseCtl{flex-basis:100%;gap:7px;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #raiseCtl .preset{flex:1;padding:9px 4px;font-size:11.5px;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #raiseAmountWrap{flex:1 1 110px;max-width:160px;min-width:0;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #raiseAmountInput{flex:1;width:auto;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #raiseAdjust{flex-basis:100%;min-width:0;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #raiseSlider{min-width:0;height:30px;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #raiseBtn{flex:1;padding:14px 8px;}
-  body:not(.act-panel-mode):not(.fl):not(.lls) #waitMsg{font-size:12px;flex-basis:100%;}
+  body:not(.act-panel-mode):not(.phone-landscape) #actionbar{padding:8px 8px max(8px,env(safe-area-inset-bottom));gap:7px;min-height:0;}
+  body:not(.act-panel-mode):not(.phone-landscape) #actionbar>#logToggle,
+  body:not(.act-panel-mode):not(.phone-landscape) #actionbar>#replayBtn,
+  body:not(.act-panel-mode):not(.phone-landscape) #actionbar>#exportBtn,
+  body:not(.act-panel-mode):not(.phone-landscape) #actionbar>#aiReviewBtn{padding:8px 10px;font-size:11px;flex:1;}
+  body:not(.act-panel-mode):not(.phone-landscape) #humanCtls{width:100%;flex-wrap:wrap;gap:8px;}
+  body:not(.act-panel-mode):not(.phone-landscape) #humanCtls #foldBtn,
+  body:not(.act-panel-mode):not(.phone-landscape) #humanCtls #callBtn{flex:1;padding:15px 8px;font-size:15px;}
+  body:not(.act-panel-mode):not(.phone-landscape) #raiseCtl{flex-basis:100%;gap:7px;}
+  body:not(.act-panel-mode):not(.phone-landscape) #raiseCtl .preset{flex:1;padding:9px 4px;font-size:11.5px;}
+  body:not(.act-panel-mode):not(.phone-landscape) #raiseAmountWrap{flex:1 1 110px;max-width:160px;min-width:0;}
+  body:not(.act-panel-mode):not(.phone-landscape) #raiseAmountInput{flex:1;width:auto;}
+  body:not(.act-panel-mode):not(.phone-landscape) #raiseAdjust{flex-basis:100%;min-width:0;}
+  body:not(.act-panel-mode):not(.phone-landscape) #raiseSlider{min-width:0;height:30px;}
+  body:not(.act-panel-mode):not(.phone-landscape) #raiseBtn{flex:1;padding:14px 8px;}
+  body:not(.act-panel-mode):not(.phone-landscape) #waitMsg{font-size:12px;flex-basis:100%;}
   #log{left:6px;right:6px;width:auto;bottom:6px;max-height:40vh;}
 }
 @media(max-width:1024px) and (orientation:landscape) and (max-height:500px){
@@ -1455,7 +1415,7 @@ body.fl #raiseBtn .act-amount{font-size:12.5px;}
     <button id="exportBtn" title="Download full hand history as JSON" style="background:none;border:1px solid var(--line);color:var(--dim);border-radius:7px;padding:6px 11px;cursor:pointer;font-size:12px;">Export history</button>
     <button id="aiReviewBtn" class="hidden" title="Download up to 20 hands from the current game with AI coach metadata as text" style="background:none;border:1px solid var(--line);color:var(--dim);border-radius:7px;padding:6px 11px;cursor:pointer;font-size:12px;">AI review (.txt)</button>
     <span id="waitMsg"></span>
-    <div id="humanCtls" class="hidden" style="display:flex;align-items:center;gap:14px;flex:1;">
+    <div id="humanCtls" class="hidden">
       <button id="coachToggle" type="button" aria-pressed="false">Coach</button>
       <button class="btn" id="foldBtn">Fold</button>
       <button class="btn" id="callBtn">Call</button>
@@ -1613,21 +1573,21 @@ body.fl #raiseBtn .act-amount{font-size:12.5px;}
   </div>
 </div>
 
-<script src="charts.js?v=98"></script>
-  <script src="js/eval.js?v=98"></script>
-  <script src="js/preflop-policy-pack.js?v=98"></script>
-  <script src="js/preflop-blueprint.js?v=98"></script>
-  <script src="js/modes/registry.js?v=98"></script>
-  <script src="js/modes/tournament.js?v=98"></script>
-  <script src="js/modes/cash.js?v=98"></script>
-  <script src="js/engine.js?v=98"></script>
-  <script src="js/rewards.js?v=98"></script>
-  <script src="vendor/wasm-postflop/comlink.js?v=98"></script>
-  <script src="js/solver.js?v=98"></script>
-  <script src="js/coach.js?v=98"></script>
-  <script src="js/ai.js?v=98"></script>
-  <script src="js/mp.js?v=98"></script>
-  <script src="js/ui.js?v=98"></script>
+<script src="charts.js?v=99"></script>
+  <script src="js/eval.js?v=99"></script>
+  <script src="js/preflop-policy-pack.js?v=99"></script>
+  <script src="js/preflop-blueprint.js?v=99"></script>
+  <script src="js/modes/registry.js?v=99"></script>
+  <script src="js/modes/tournament.js?v=99"></script>
+  <script src="js/modes/cash.js?v=99"></script>
+  <script src="js/engine.js?v=99"></script>
+  <script src="js/rewards.js?v=99"></script>
+  <script src="vendor/wasm-postflop/comlink.js?v=99"></script>
+  <script src="js/solver.js?v=99"></script>
+  <script src="js/coach.js?v=99"></script>
+  <script src="js/ai.js?v=99"></script>
+  <script src="js/mp.js?v=99"></script>
+  <script src="js/ui.js?v=99"></script>
 <script>
 /* ---------- offline mode (PWA): cache the game so it runs with no internet ---------- */
 if(HAS_DOM && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)){

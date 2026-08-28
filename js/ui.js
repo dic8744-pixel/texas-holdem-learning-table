@@ -1839,9 +1839,7 @@ function resolveCenterClearance(W,H,cx,cy,cBox,pad,overlapGap){
 }
 /* Uniform oval: equal arc-length spacing + angular overlap spread (no edge clamp stacking) */
 function layoutOvalSeats(felt,W,H,cx,cy){
-  const fl=document.body.classList.contains('fl');
-  const lls=document.body.classList.contains('lls');
-  const compact=fl||lls;
+  const compact=document.body.classList.contains('phone-landscape');
   const n=state.players.length;
   const pad={l:8,r:8,t:8,b:6};
   if(document.body.classList.contains('act-panel-open')&&useLandscapePanel()) pad.r=56;
@@ -1850,14 +1848,16 @@ function layoutOvalSeats(felt,W,H,cx,cy){
   let sW=118,sH=48;
   for(const p of state.players){
     const s=$('seat'+p.i);
-    if(s&&s.offsetHeight){sW=Math.max(sW,s.offsetWidth);sH=Math.max(sH,s.offsetHeight);}
+    if(s&&s.offsetHeight){
+      if(!p.isHuman)sW=Math.max(sW,s.offsetWidth);
+      sH=Math.max(sH,s.offsetHeight);
+    }
   }
   const lift=compact?14:28;
   const maxRx=(W-sW)/2-pad.l, maxRy=(H-sH)/2-pad.t;
   let rx=Math.min(compact?W*0.42:W*0.41,Math.max(50,maxRx));
   let ry=Math.min(compact?H*0.42:H*0.40,Math.max(compact?32:50,maxRy));
-  /* phone landscape (native lls + rotated-portrait fl): flatter oval + lower center
-     so the top seats clear the edge instead of crowding it */
+  /* phone landscape: flatter oval + lower center so top seats clear the edge */
   if(compact&&W>H&&n<=6){
     ry=Math.min(ry,H*0.34);
     cy=H*0.53;
@@ -1892,19 +1892,6 @@ function layoutOvalSeats(felt,W,H,cx,cy){
       resolveOvalAngles(angs,rx,ry,cx,cy,lift,overlapGap);
     }
   }
-  if(fl&&W>H&&n>1){
-    const chord=2*rx*Math.sin(Math.PI/n);
-    const gap=chord/(n-1);
-    felt.style.setProperty('--seatScale',String(Math.max(n<=6?0.92:0.75,Math.min(1,gap/(sW+6)))));
-  }
-  /* short landscape: drop hero slightly below the oval so the board can sit between */
-  if(lls&&W>H){
-    const hero=state.players.find(p=>p.isHuman);
-    if(hero){
-      const seat=$('seat'+hero.i);
-      if(seat) seat.style.top=(Math.min(H-pad.b,parseFloat(seat.style.top)+10))+'px';
-    }
-  }
 }
 function layoutDesktopSeats(felt,W,H,cx,cy){
   layoutOvalSeats(felt,W,H,cx,cy);
@@ -1912,23 +1899,26 @@ function layoutDesktopSeats(felt,W,H,cx,cy){
 /* Mobile: hero bottom-center; opponents on an upper arc. Board sits above hero. */
 function layoutMobileSeats(felt){
   const W=felt.clientWidth,H=felt.clientHeight,cx=W/2,n=state.players.length;
-  const fl=document.body.classList.contains('fl')||document.body.classList.contains('lls');
+  const compact=document.body.classList.contains('phone-landscape');
   let sW=102,sH=100;
   for(const p of state.players){
     const s=$('seat'+p.i);
-    if(s&&s.offsetHeight){sW=Math.max(sW,s.offsetWidth);sH=Math.max(sH,s.offsetHeight);}
+    if(s&&s.offsetHeight){
+      if(!p.isHuman)sW=Math.max(sW,s.offsetWidth);
+      sH=Math.max(sH,s.offsetHeight);
+    }
   }
   const shrink=Math.max(0,n-4)*0.02;
   /* wide-short landscape: spread opponents across the full width on a flat top arc */
   const land=W>H;
   const rx=land
     ? Math.max(120,(W-sW)/2-6)
-    : Math.min(W*(0.40-shrink)*(fl?0.90:1),(W-sW)/2-8);
+    : Math.min(W*(0.40-shrink)*(compact?0.90:1),(W-sW)/2-8);
   const ry=land
     ? Math.min(H*0.14,Math.max(12,H*0.22-sH*0.15))
-    : Math.min(H*(fl?0.32:0.35)-shrink*H*0.25,H*0.36);
-  const ocy=H*(fl?0.41:0.43);
-  const topY=land?(fl||document.body.classList.contains('lls')?8:sH*0.42):sH*0.42;
+    : Math.min(H*(compact?0.32:0.35)-shrink*H*0.25,H*0.36);
+  const ocy=H*(compact?0.41:0.43);
+  const topY=land?(compact?8:sH*0.42):sH*0.42;
   const opponents=state.players.filter(p=>!p.isHuman);
   const m=opponents.length;
   /* landscape: if the even per-seat width is tighter than a plate, scale seats to fit */
@@ -1976,78 +1966,40 @@ function layoutMobileSeats(felt){
     if(seat&&seat.offsetHeight){
       seat.style.left=cx+'px';
       seat.style.top=(H-seat.offsetHeight)+'px';
+      const box=elementRectSeatLayout(seat);
+      seat.style.top=((parseFloat(seat.style.top)||0)+(H-2-box.b))+'px';
     }
   }
 }
-/* Deterministic rotated-portrait (fl) layout: hero pinned bottom-center, opponents
-   on a top arc (one or two rows) evenly spread across the width, with a single
-   computed scale so any player count fits any viewport without overlap. The center
-   pot/board is placed in the middle band by positionCenterArea(). */
-function layoutCompactRows(felt,W,H){
-  const cx=W/2;
-  const sideL=8,sideR=(document.body.classList.contains('act-panel-open')&&useLandscapePanel())?56:8;
-  const hasBoard=$('board')?.classList.contains('has-cards');
-  const topPad=6,botPad=2,gapV=10,gapH=5,rowGap=6,boardH=hasBoard?84:24;
-  /* measure unscaled sizes */
+/* Once community cards are visible, keep opponents in side rails. This leaves a
+   dedicated center lane for the board and a dedicated bottom lane for the hero. */
+function layoutPhoneBoardSeats(felt,W,H){
   felt.style.setProperty('--seatScale','1');
+  const padX=8,padY=6;
   const hero=state.players.find(p=>p.isHuman);
-  let pw=70,oppH=40,heroH=60;
-  for(const p of state.players){
-    const s=$('seat'+p.i); if(!s||!s.offsetHeight)continue;
-    const plate=s.querySelector('.plate');
-    const w=plate?plate.offsetWidth:s.offsetWidth;
-    if(p.isHuman){ heroH=Math.max(heroH,s.offsetHeight); }
-    else { pw=Math.max(pw,w); oppH=Math.max(oppH,s.offsetHeight); }
-  }
-  const m=state.players.length-1;            // opponents
-  const usableW=W-sideL-sideR;
-  const sSingle=m>1?(usableW-(m-1)*gapH)/(m*pw):1;
-  const twoRow=m>=4&&sSingle<0.9;
-  let s,rows;
-  if(!twoRow){
-    const sV=(H-topPad-botPad-2*gapV-boardH)/(oppH+14+heroH);
-    s=Math.max(0.5,Math.min(1,sSingle,sV));
-    rows=[m];
-  }else{
-    const back=Math.ceil(m/2),front=m-back,per=Math.max(back,front);
-    const sH=(usableW-(per-1)*gapH)/(per*pw);
-    const sV=(H-topPad-botPad-rowGap-2*gapV-boardH)/(2*oppH+heroH);
-    s=Math.max(0.45,Math.min(1,sH,sV));
-    rows=[back,front];
-  }
-  felt.style.setProperty('--seatScale',String(s));
-  const seatW=pw*s, oH=oppH*s, hH=heroH*s;
-  const xL=sideL+seatW/2, xR=W-sideR-seatW/2;
-  /* hero bottom-center */
-  if(hero){
-    const hs=$('seat'+hero.i);
-    if(hs){ hs.style.left=cx+'px'; hs.style.top=Math.max(topPad,H-botPad-hH)+'px'; }
-  }
-  /* opponents */
-  const opps=state.players.filter(p=>!p.isHuman);
-  const place=(list,topY)=>{
-    const c=list.length;
+  const opponents=state.players.filter(p=>!p.isHuman);
+  const columns=[opponents.filter((_,i)=>i%2===0),opponents.filter((_,i)=>i%2===1)];
+  const placeColumn=(list,right)=>{
     list.forEach((p,i)=>{
-      const seat=$('seat'+p.i); if(!seat)return;
-      const t=c>1?i/(c-1):0.5;
-      const x=(c>1)?(xL+(xR-xL)*t):cx;
-      seat.style.left=x+'px';
-      seat.style.top=topY+'px';
+      const seat=$('seat'+p.i);if(!seat||!seat.offsetHeight)return;
+      const targetY=padY+(H-2*padY)*(i+0.5)/list.length;
+      seat.style.left=(right?W:0)+'px';seat.style.top=targetY+'px';
+      let rect=elementRectSeatLayout(seat);
+      const targetX=right?W-padX-rect.w/2:padX+rect.w/2;
+      seat.style.left=((parseFloat(seat.style.left)||0)+targetX-rect.cx)+'px';
+      seat.style.top=((parseFloat(seat.style.top)||0)+targetY-rect.cy)+'px';
+      clampSeatLayout(seat,W,H,{l:padX,r:padX,t:padY,b:padY});
     });
   };
-  if(rows.length===1){
-    const dip=14*s, c=opps.length;
-    opps.forEach((p,i)=>{
-      const seat=$('seat'+p.i); if(!seat)return;
-      const t=c>1?i/(c-1):0.5, u=2*t-1;
-      const x=(c>1)?(xL+(xR-xL)*t):cx;
-      seat.style.left=x+'px';
-      seat.style.top=(topPad+dip*u*u)+'px';
-    });
-  }else{
-    const back=rows[0];
-    place(opps.slice(0,back),topPad);
-    place(opps.slice(back),topPad+oH+rowGap);
+  placeColumn(columns[0],false);placeColumn(columns[1],true);
+  if(hero){
+    const seat=$('seat'+hero.i);
+    if(seat&&seat.offsetHeight){
+      seat.style.left=(W/2)+'px';seat.style.top=H+'px';
+      const rect=elementRectSeatLayout(seat);
+      seat.style.left=((parseFloat(seat.style.left)||0)+W/2-rect.cx)+'px';
+      seat.style.top=((parseFloat(seat.style.top)||0)+H-2-rect.b)+'px';
+    }
   }
 }
 /* The empty preflop board is a layout placeholder, not a real obstacle. Treat
@@ -2077,20 +2029,30 @@ function clampBetChipToFelt(x,y,w,h,W,H,felt){
   if(d<=1)return {x,y};
   return {x:cx+dx/d,y:cy+dy/d};
 }
+let layoutFrame=0;
+function scheduleLayoutSeats(){
+  if(!HAS_DOM||layoutFrame)return;
+  const queue=typeof requestAnimationFrame==='function'?requestAnimationFrame:(fn=>setTimeout(fn,0));
+  layoutFrame=queue(()=>{layoutFrame=0;layoutSeats();});
+}
 function layoutSeats(){
   if(!HAS_DOM||!state||BENCH)return;
   const felt=$('felt');
   const W=felt.clientWidth,H=felt.clientHeight,cx=W/2,cy=H/2;
-  /* mobile portrait: upper arc + hero bottom; mobile landscape + desktop: uniform oval */
+  /* Every phone game uses the same logical landscape table in either orientation. */
   let usedOval=false;
   if(isMobile()){
-    if(document.body.classList.contains('fl')){ layoutCompactRows(felt,W,H); }
+    if(document.body.classList.contains('phone-landscape')){
+      if($('board')?.classList.contains('has-cards'))layoutPhoneBoardSeats(felt,W,H);
+      else layoutMobileSeats(felt);
+      usedOval=true;
+    }
     else if(W>H){ layoutOvalSeats(felt,W,H,cx,cy); usedOval=true; }
     else layoutMobileSeats(felt);
   }else{ layoutDesktopSeats(felt,W,H,cx,cy); usedOval=true; }
   positionCenterArea();
   if(usedOval){
-    const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
+    const compact=document.body.classList.contains('phone-landscape');
     const pad={l:8,r:8,t:8,b:6};
     if(document.body.classList.contains('act-panel-open')&&useLandscapePanel()) pad.r=56;
     resolveCenterClearance(W,H,cx,cy,centerAreaBox(felt),pad,compact?1:2);
@@ -2173,7 +2135,7 @@ function layoutSeats(){
   }
   positionCenterArea();
   if(usedOval){
-    const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
+    const compact=document.body.classList.contains('phone-landscape');
     const pad={l:8,r:8,t:8,b:6};
     if(document.body.classList.contains('act-panel-open')&&useLandscapePanel()) pad.r=56;
     resolveCenterClearance(W,H,cx,cy,centerAreaBox(felt),pad,compact?1:2);
@@ -2184,14 +2146,14 @@ function elementRectFelt(el){
   const l=el.offsetLeft,t=el.offsetTop,w=el.offsetWidth,h=el.offsetHeight;
   return {l,t,r:l+w,b:t+h,w,h,cx:l+w/2,cy:t+h/2};
 }
-/* Layout overlap box: plate (+ hero hole on compact) — avoids false stacks from hole cards */
+/* Layout overlap box: plate, visible hero cards, action text and turn timer. */
 function elementRectSeatLayout(el){
   const plate=el.querySelector('.plate');
   if(!plate||!plate.offsetHeight) return elementRectFelt(el);
   let l=el.offsetLeft+plate.offsetLeft,t=el.offsetTop+plate.offsetTop;
   let r=l+plate.offsetWidth,b=t+plate.offsetHeight;
-  const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
-  if(compact&&el.classList.contains('human')){
+  const compact=document.body.classList.contains('phone-landscape');
+  if(compact&&(el.classList.contains('human')||el.classList.contains('revealed'))){
     const hole=el.querySelector('.hole');
     if(hole&&hole.offsetHeight){
       const hl=el.offsetLeft+hole.offsetLeft,ht=el.offsetTop+hole.offsetTop;
@@ -2204,6 +2166,22 @@ function elementRectSeatLayout(el){
     const al=el.offsetLeft+act.offsetLeft,at=el.offsetTop+act.offsetTop;
     l=Math.min(l,al); r=Math.max(r,al+act.offsetWidth);
     b=Math.max(b,at+act.offsetHeight);
+  }
+  const timer=el.querySelector('.tmr');
+  if(timer&&timer.offsetHeight&&timer.textContent.trim()){
+    const tl=el.offsetLeft+timer.offsetLeft,tt=el.offsetTop+timer.offsetTop;
+    l=Math.min(l,tl); t=Math.min(t,tt);
+    r=Math.max(r,tl+timer.offsetWidth); b=Math.max(b,tt+timer.offsetHeight);
+  }
+  const transform=getComputedStyle(el).transform;
+  if(transform&&transform!=='none'){
+    const match=transform.match(/^matrix\(([^,]+)/);
+    const scale=match?Math.abs(parseFloat(match[1])):1;
+    if(Number.isFinite(scale)&&Math.abs(scale-1)>0.001){
+      const ox=el.offsetLeft+el.offsetWidth/2,oy=el.offsetTop;
+      l=ox+(l-ox)*scale; r=ox+(r-ox)*scale;
+      t=oy+(t-oy)*scale; b=oy+(b-oy)*scale;
+    }
   }
   return {l,t,r,b,w:r-l,h:b-t,cx:(l+r)/2,cy:(t+b)/2};
 }
@@ -2261,12 +2239,12 @@ function boardCardMetrics(){
     if(!isNaN(g))gap=g;
   }
   if(!cardW){
-    if(document.body.classList.contains('fl'))cardW=50;
+    if(document.body.classList.contains('phone-landscape'))cardW=54;
     else if(isMobile())cardW=50;
     else cardW=54;
   }
   if(!gap){
-    if(document.body.classList.contains('fl'))gap=3;
+    if(document.body.classList.contains('phone-landscape'))gap=6;
     else if(isMobile())gap=4;
     else gap=7;
   }
@@ -2298,7 +2276,7 @@ function centerAreaBox(felt){
 }
 /* Hero overlap box for center lift (hole + plate on compact mobile). */
 function heroCenterClearRect(seat){
-  const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
+  const compact=document.body.classList.contains('phone-landscape');
   if(compact&&seat.classList.contains('human')) return elementRectSeatLayout(seat);
   const plate=seat.querySelector('.plate');
   if(plate&&plate.offsetHeight){
@@ -2314,10 +2292,12 @@ function settleCenterVertical(center,felt,W,H,minPct,maxPct){
   const hSeat=hero?$('seat'+hero.i):null;
   const gap=10;
   let topB=0, topT=Infinity;
+  const centerBox=centerRectDOM(center);
   for(const p of state.players){
     if(p.isHuman)continue;
     const s=$('seat'+p.i); if(!s?.offsetHeight)continue;
     const r=elementRectSeatLayout(s);
+    if(r.r+gap<=centerBox.l||r.l-gap>=centerBox.r)continue;
     if(r.t<topT){ topT=r.t; topB=r.b; }
     else if(r.t===topT) topB=Math.max(topB,r.b);
   }
@@ -2361,7 +2341,8 @@ function positionCenterArea(){
   const felt=$('felt'), center=$('centerArea');
   if(!felt||!center)return;
   const W=felt.clientWidth,H=felt.clientHeight,n=state.players.length;
-  const boardMin=boardMinWidth();
+  const hasBoard=!!$('board')?.classList.contains('has-cards');
+  const boardMin=hasBoard?boardMinWidth():0;
   const maxW=Math.max(boardMin,Math.min(W*0.88,300-n*8));
   if(!isMobile()){
     center.style.top='';
@@ -2376,23 +2357,16 @@ function positionCenterArea(){
   }
   center.style.left='50%';
   center.style.width='auto';
-  center.style.minWidth=boardMin+'px';
+  center.style.minWidth=hasBoard?boardMin+'px':'';
   center.style.maxWidth=maxW+'px';
-  const fl=document.body.classList.contains('fl');
-  /* rotated-portrait post-flop: board+pot laid out in a row (see CSS) so the pot
-     renders below the flop after the 90° rotation — let it size to its content. */
-  if(fl&&$('board')?.classList.contains('has-cards')){
-    center.style.minWidth='';
-    center.style.maxWidth='none';
-  }
   const land=W>H;
-  const base=land?50:(fl?36:40);
+  const base=land?50:40;
   center.style.top=base+'%';
   if(land){
     settleCenterVertical(center,felt,W,H,28,base);
     liftCenterAboveHero(center,felt,W,H,24,parseFloat(center.style.top)||base);
   }
-  else liftCenterAboveHero(center,felt,W,H,fl?34:38,base);
+  else liftCenterAboveHero(center,felt,W,H,38,base);
 }
 function positionDealerBtn(){
   if(!HAS_DOM||!state)return;
@@ -2485,8 +2459,8 @@ function render(winners){
     seat.classList.toggle('revealed', !!p.revealed&&!p.isHuman&&!p.folded&&!p.out&&p.hole.length>0);
     $('chips'+p.i).textContent= p.out?'OUT':money(p.chips)+(p.allIn?' · all-in':'');
     $('pos'+p.i).textContent= p.out?'':(p.pos||'');
-    const lls=document.body.classList.contains('lls');
-    $('act'+p.i).textContent=(lls&&/^(SB|BB) /.test(p.lastAct))?'':p.lastAct;
+    const phoneLandscape=document.body.classList.contains('phone-landscape');
+    $('act'+p.i).textContent=(phoneLandscape&&/^(SB|BB) /.test(p.lastAct))?'':p.lastAct;
     const hole=$('hole'+p.i);
     if(p.hole.length===0) setHTML(hole,'');
     else if(p.isHuman) setHTML(hole,p.hole.map(c=>cardHTML(c,false,true)).join(''));
@@ -2523,9 +2497,8 @@ function useLandscapePanel(){
 }
 function syncActPanelMode(){
   if(!HAS_DOM)return;
-  /* fl (rotated portrait) and lls (native landscape) both use the always-visible bottom
-     action dock, not the slide-out right-side panel */
-  const on=useLandscapePanel()&&!document.body.classList.contains('fl')&&!document.body.classList.contains('lls');
+  /* Phone landscape uses the always-visible bottom dock, never a slide-out panel. */
+  const on=useLandscapePanel()&&!document.body.classList.contains('phone-landscape');
   document.body.classList.toggle('act-panel-mode',on);
   if(!on){
     document.body.classList.remove('act-panel-open','act-panel-collapsed');
@@ -2551,7 +2524,7 @@ function setActBar(open){
 function syncActFab(){
   if(!HAS_DOM||!isMobile())return;
   const fab=$('actFab'),g=$('game');
-  if(document.body.classList.contains('fl')){ if(fab)fab.classList.add('hidden'); return; }
+  if(document.body.classList.contains('phone-landscape')){ if(fab)fab.classList.add('hidden'); return; }
   if(!fab||!g||g.classList.contains('hidden')||!useLandscapePanel()){
     if(fab)fab.classList.add('hidden');
     return;
@@ -2562,24 +2535,26 @@ function syncActFab(){
   fab.textContent=onTurn?T('actTurn'):T('actMenu');
   fab.classList.toggle('pulse',onTurn&&!open);
 }
-/* force landscape on phones: rotate the whole game 90° when held portrait */
+/* Keep one logical phone-landscape UI; `fl` only supplies the physical rotation. */
 function updateOrient(){
   if(!HAS_DOM)return;
   const g=$('game'); if(!g)return;
-  const portrait=window.innerHeight>window.innerWidth;
+  const portrait=window.innerHeight>=window.innerWidth;
   const phone=Math.min(window.innerWidth,window.innerHeight)<=620;
-  const on=portrait&&phone&&!g.classList.contains('hidden');
-  document.body.classList.toggle('fl',on);
-  /* genuine phone landscape (short, wide): compact oval + bottom control dock */
-  const landShort=!on&&!g.classList.contains('hidden')&&window.innerWidth>window.innerHeight&&Math.min(window.innerWidth,window.innerHeight)<=500;
-  document.body.classList.toggle('lls',landShort);
+  const active=!g.classList.contains('hidden');
+  const phoneLandscape=active&&phone;
+  const rotated=phoneLandscape&&portrait;
+  document.body.classList.toggle('phone-landscape',phoneLandscape);
+  document.body.classList.toggle('phone-landscape-narrow',phoneLandscape&&Math.max(window.innerWidth,window.innerHeight)<=700);
+  document.body.classList.toggle('fl',rotated);
+  document.body.classList.remove('lls');
   const bar=$('actionbar');
   const tb=$('topbar');
   /* everything stays INSIDE the rotated frame so the menu (top) and action bar (bottom)
      read in the same landscape orientation as the table */
   if(tb&&tb.parentNode!==g) g.insertBefore(tb,g.firstChild);
   if(bar&&bar.parentNode!==g) g.appendChild(bar);
-  if(on){
+  if(rotated){
     g.style.width=window.innerHeight+'px';
     g.style.height=window.innerWidth+'px';
     g.style.transform=`translateX(${window.innerWidth}px) rotate(90deg)`;
@@ -3362,6 +3337,7 @@ function showActions(p){
   }
   try{ updateCoach(p); }catch(err){ $('coachBody').innerHTML=`<div class="waiting">${C('coachErr')}</div>`; }
   syncActFab();
+  scheduleLayoutSeats();
 }
 function hideActions(){
   if(!HAS_DOM)return;
@@ -3370,6 +3346,7 @@ function hideActions(){
   coachWait();
   setActBar(false);
   syncActFab();
+  scheduleLayoutSeats();
 }
 function updateRaiseLabel(){
   const v=getRaiseSliderAmt();
@@ -4003,15 +3980,21 @@ function mpEmote(i){
   }
 }
 /* visible countdown on the acting seat — audible tic-tac for the last 5 seconds */
-let tmrLastTick=0,tmrPrevBank=false;
+let tmrLastTick=0,tmrPrevBank=false,tmrLayoutSeat=-1;
+function syncTimerLayoutSeat(seat){
+  if(tmrLayoutSeat===seat)return;
+  tmrLayoutSeat=seat;
+  scheduleLayoutSeats();
+}
 if(HAS_DOM)setInterval(()=>{
   ttCheck();   // primary expiry enforcement — survives throttled/dropped setTimeouts
   document.querySelectorAll('.tmr').forEach(el=>{if(el.textContent){el.textContent='';el.classList.remove('low');}});
-  if(!state||!state.turnDeadline||state.handOver||state.gameOver){tmrPrevBank=false;return;}
+  if(!state||!state.turnDeadline||state.handOver||state.gameOver){tmrPrevBank=false;syncTimerLayoutSeat(-1);return;}
   const left=Math.ceil((state.turnDeadline-Date.now())/1000);
-  if(left<=0||left>65){tmrPrevBank=!!state.turnBank;return;}
+  if(left<=0||left>65){tmrPrevBank=!!state.turnBank;syncTimerLayoutSeat(-1);return;}
   const el=$('tmr'+state.turnIdx);
   if(el){el.textContent=(state.turnBank?'🏦 ':'⏱ ')+left;el.classList.toggle('low',left<=5);}
+  syncTimerLayoutSeat(el?state.turnIdx:-1);
   const myTurn=state.turnIdx===0&&state.players[0]&&state.players[0].isHuman;
   if(myTurn){
     if(left<=5&&left>=1&&left!==tmrLastTick){tmrLastTick=left;sfx('tick');haptic(20);}
