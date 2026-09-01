@@ -1,9 +1,15 @@
 {
-  "name": "sit-and-go-holdem",
+  "name": "texas-holdem-learning-table",
+  "description": "Local 6-9 player no-limit Texas Hold'em study table with Chinese UI and tiered AI",
   "private": true,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "test": "npm run test:engine && npm run test:ranges && npm run test:preflop-packs && npm run test:solver && npm run test:scenarios && npm run test:landscape",
+    "test": "npm run test:engine && npm run test:simulation && npm run test:ai && npm run test:ranges && npm run test:preflop-packs && npm run test:solver && npm run test:scenarios && npm run test:landscape && npm run test:e2e",
     "test:engine": "node scripts/test-engine-confidence.mjs",
+    "test:simulation": "node scripts/test-game-simulation.mjs",
+    "test:ai": "node scripts/test-ai-difficulty.mjs",
     "rebuild": "node scripts/build.mjs multifile",
     "build:bundle": "node scripts/build.mjs bundle",
     "build:extract": "node scripts/build.mjs extract",
@@ -12,6 +18,7 @@
     "test:solver": "node scripts/test-solver-routing.mjs",
     "test:scenarios": "node scripts/test-table-scenarios.mjs",
     "test:landscape": "node scripts/test-landscape-mobile.cjs",
+    "test:e2e": "node scripts/test-e2e-game.cjs",
     "audit:coach": "node scripts/audit-coach.mjs --strict"
   },
   "devDependencies": {

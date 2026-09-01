@@ -516,7 +516,60 @@ cfTitle:"Explorador contrafactual",cfSub:"Compara qué podría haber ocurrido en
 cfFoldWhy:"Retirarse no arriesga más fichas y tiene 0 EV adicional.",cfCheckWhy:eq=>`Pasar no cuesta nada, mantiene viva tu mano y realiza cerca del ${eq}% de equity sin aumentar el bote.`,cfCallWhy:(eq,need,amt)=>`Igualar invierte ${amt} con cerca de ${eq}% de equity utilizable frente al ${need}% necesario.`,cfRaiseWhy:(eq,amt)=>`Subir a ${amt} combina cerca de ${eq}% de equity con fold equity modelada cuando los rivales abandonan sus rangos débiles.`,cfAssumption:"La EV es orientativa, no una promesa: las cartas futuras y respuestas rivales siguen siendo inciertas.",
 won:"ganó",foldedTag:"retirado",showdown:"showdown",fullHand:"Mano completa",preflop:"Pre-flop",flop:"Flop",turnSt:"Turn",riverSt:"River",noHands:"Aún no hay manos terminadas en esta partida.",
 ord:n=>n+'º'}};
-try{lang=localStorage.getItem('sg_poker_lang')||'en';}catch(e){}
+TR.zh=Object.assign({},TR.en,{
+sub:'本地无限注德州扑克锦标赛 · 对战 AI',subCash:'本地无限注德州扑克现金桌 · 仅供学习',
+modeLbl:'牌局模式',modeSng:'锦标赛',modeCash:'现金桌',titleSng:'德州扑克锦标赛',titleCash:'德州扑克学习桌',
+players:'总人数',blinds:'盲注',buyin:'买入',stackDepth:'你的买入',aiBuyin:'AI 买入深度',ante:'前注',noAnte:'无前注',
+speed:'盲注上涨速度',turbo:'快速',standard:'标准',slow:'慢速',diff:'AI 难度',easy:'初级',medium:'中级',hard:'高级',language:'语言',
+fourColorDeck:'四色牌面',fourColorDeckHint:'黑桃黑色、红桃红色、方片蓝色、梅花绿色',
+timerOpt:'⏱ 行动计时（25 秒 + 时间银行）',timerInfo:'每次决策有 25 秒；超时后会使用本局共 60 秒的时间银行。两者都用完后，系统会自动过牌或弃牌。',
+koBonusOpt:'🎯 淘汰奖励',koBonusInfo:'锦标赛可选规则：亲自淘汰对手时获得初始筹码 10% 的额外奖励。',whatDoes:'这是什么？',
+tableStyle:'牌桌风格',tableBalanced:'均衡混合',tableTight:'紧手桌',tableLoose:'松手桌',tableAggressive:'激进桌',tableWild:'疯狂桌',tableRandom:'随机',tableCustom:'自定义',
+tableDescBalanced:'包含各种对手风格的混合牌桌。',tableDescTight:'入池较少、重视大额下注的谨慎牌桌。',tableDescLoose:'看更多翻牌、用更宽范围跟注的牌桌。',tableDescAggressive:'频繁偷盲、持续下注和加注的高压力牌桌。',tableDescWild:'范围很宽、尺度更大、诈唬更多的高波动牌桌。',tableDescRandom:'每名 AI 独立随机一种风格。',tableDescCustom:'精确指定每种风格的 AI 数量。',
+profileRock:'紧手',profileStation:'松手跟注型',profileShark:'激进',profileManiac:'疯狂',tableRandomLine:n=>`${n} 名 AI · 开桌时重新随机风格`,tableCustomTotal:(n,t)=>`已分配 ${n}/${t} 名 AI`,tableCustomInvalid:t=>`必须恰好分配 ${t} 名 AI 才能开桌。`,
+deal:'开始发牌',startCash:'坐下开桌',resume:'▶ 继续锦标赛',resumeMid:'▶ 继续当前手牌',resumeCash:'▶ 继续现金桌',review:'局后复盘',
+quickPlayTitle:'准备好了吗？',quickPlaySub:'新开一桌，或继续上次保存的牌局。',
+sessionPnL:'本桌净积分',cashSessionEnd:'本桌结束',cashSessionSub:(h,r,pnl)=>`${h} 手 · ${r} 次补充 · 净积分 ${pnl>=0?'+':'−'}${usd(Math.abs(pnl))}`,
+cashRebuy:b=>`本桌补充 ${b}`,topUp:'＋ 本桌补充 10,000 积分',topUpRequired:'你的桌上积分为 0，请先补充积分再开始下一手。',
+revTitle:'局后复盘',reviewBtnSub:'复盘漏洞并继续改进计划',revWinRate:'胜率',revITM:'奖励圈',revAvgFinish:'平均名次',revNet:'净积分',revEVLeaked:'损失的估算 EV',revGames:'牌局',revNoGames:'还没有完成的牌局。',revNoGamesCash:'还没有完成的现金桌。',revCashBadge:'现金桌',revSngBadge:'锦标赛',revFilterAll:'全部',revFilterCash:'现金桌',revFilterSng:'锦标赛',revCashHands:'现金桌手数',revCashNetBB:'净赢（BB）',revCashRebuys:'补充次数',
+sprLbl:'SPR',sprZoneDeep:'深',sprZoneMid:'中',sprZoneLow:'低',statBB100:'BB/100',statNetBB:'净赢（BB）',statRebuys:'补充次数',
+revIntro:'找出代价最高和重复出现的决策，并回放当时的完整行动。',revLeaksTitle:'按场景查找漏洞',revLeaksNone:'目前没有可分类的漏洞。',revFocusTitle:'下一步练什么',revFocusSub:'按总 EV 损失和重复次数排序。',revFocusRank:n=>`优先级 ${n}`,revTimes:n=>`${n} 次`,revAvgLoss:'平均损失',
+planTitle:'自适应改进计划',planSub:'根据真实牌桌决策和练习结果持续更新。',planNoData:'完成一局后会生成你的个性化计划。',planMastery:'掌握度',planEvidence:n=>`${n} 个决策样本`,planEarly:'早期信号',planReliable:'样本较可靠',planStatusFocus:'当前重点',planStatusBuilding:'正在建立',planStatusStrong:'接近掌握',planTrendUp:n=>`↑ 最近提高 ${n} 点`,planTrendDown:n=>`↓ 最近下降 ${n} 点`,planTrendFlat:'→ 最近稳定',
+adaptiveAiTitle:'对手学到了什么',adaptiveAiSub:'只分析你的可见行动，绝不读取隐藏底牌。',adaptiveAiSample:n=>`${n} 个可见行动`,adaptiveAiEarly:'早期读牌',adaptiveAiReliable:'较可靠样本',adaptiveAiEasy:'初级 · 几乎不适应',adaptiveAiMedium:'中级 · 谨慎适应',adaptiveAiHard:'高级 · 完整适应',adaptiveAiNeedMore:n=>`还需 ${n} 个可见行动才会开始适应。`,adaptiveAiBalanced:'暂时没有明显倾向，AI 保持默认策略。',adaptiveAiOverfold:'你面对压力时弃牌偏多，AI 会增加施压和诈唬。',adaptiveAiSticky:'你面对压力时跟注偏多，AI 会减少诈唬并扩大价值下注。',adaptiveAiAggressive:'你翻牌后下注和加注偏多，AI 会用更紧范围继续并增加诱捕。',adaptiveAiPassive:'你在非自然行动流程中的过牌偏多，AI 会更常主动下注。',adaptiveAiPreAgg:'你翻牌前加注偏多，AI 会用更强范围防守。',
+confidenceHigh:'高',confidenceMedium:'中',confidenceLimited:'有限',confidenceChart:'翻牌前范围表',confidenceAdjustedChart:'调整后的翻牌前范围表',confidenceMath:'精确底池赔率 + 胜率模拟',confidenceHeuristic:'范围启发式',confidenceSolver:'翻牌后范围求解器',confidencePreflopGto:'本地翻牌前近似均衡',confidenceTitle:(source,level)=>`${source} · ${level}置信度`,confidenceMathNote:'底池赔率为精确计算；胜率、未来行动和对手范围是模型估计。',confidenceHeuristicNote:'多人底池和未来行动需要更宽泛的假设，应把建议理解为方向性意见。',confidenceSolverNote:'使用带抽象的翻牌后 CFR 解；它不是端到端精确 GTO。',confidencePreflopGtoNote:'使用经过校验的本地近似均衡策略包；仍受离散行动树抽象限制。',
+confidenceChartNote:'这个翻牌前节点使用位置和筹码深度范围表。',confidenceAdjustedChartNote:'当前尺度不在内置范围表的标准树中，因此结合底池赔率、位置和胜率实现估计调整。',confidenceSolverExactNote:'翻牌后 CFR 解以通过校验的本地翻牌前近似均衡范围为条件；两个求解器都使用已声明的抽象。',
+strategyLabel:'策略来源',strategyBaseline:'自定义启发式备用策略',strategyChart:'翻牌前范围表基线',strategyAllIn:'全押范围 + 胜率模型',strategyIcm:'ICM 调整模型',strategyExploit:'针对性调整',strategySolver:'求解器均衡策略',strategyGtoBaseline:'已验证的近似均衡基线',
+preflopRank:p=>`翻牌前排名：约为起手牌前 ${p}%`,lowerStronger:'百分比越低越强',
+firstToAct:'率先行动（位置不利）',lastToAct:'最后行动（位置有利）',ofN:'共',need:'需要 ',vs:'对阵',opp:'名对手',opps:'名对手',
+beginnerMath:(raw,usable,need,enough)=>`原始胜率为 ${raw}%；计入位置与风险后的可用胜率约 ${usable}%。跟注需要 ${need}%——${enough?'达到继续条件':'不足，应弃牌'}。`,
+beginnerSolver:'按这个节点的求解器混合策略行动。仅看底池赔率，不能代替对完整行动树的 EV 比较。',
+beginnerChartFold:(raw,usable,need)=>`原始胜率为 ${raw}%，情境调整后也接近临界值（约 ${usable}%，需要 ${need}%），但这手牌不在当前位置的继续范围内。范围表同时考虑了被压制风险、后续街难度和身后仍可行动的玩家，因此应优先采用范围结论：弃牌。`,
+beginnerBroadwayFlat:(raw,usable,need)=>`这是面对小尺度加注时，用相连高张进行的刻意偏松跟注。严格模型估计可用胜率约 ${usable}%，临界值为 ${need}%；它属于建立多人底池的风格调整，不是内置基线范围的标准跟注。面对更大加注或更高筹码风险时应弃牌。`,
+beginnerFree:'简单说：过牌不花积分，可以在不扩大底池的情况下继续看牌。',beginnerDrySidePot:'简单说：你确实有顶对，但已有人全押且边池为空。在干燥牌面上，下注多半只会赶走更差的牌，却会对更强的牌建立新边池。',beginnerAgg:'简单说：下注或加注不只看胜率；对手可能立即弃牌，更差的牌也可能跟注。',beginnerOpenFold:'简单说：现在不需要再投入积分，但这手牌从当前位置进入底池的长期收益太差，弃牌更好。',
+zoneG:'🟢 筹码舒适',zoneY:'🟡 需要争夺底池',zoneO:'🟠 即将进入全押或弃牌区',zoneR:'🔴 全押或弃牌',prizeP:'奖励圈压力',extraNeeded:'额外所需胜率',icmTitle:'锦标赛价值（ICM）',icmImpact:'这次跟注不能只看筹码赔率，因为损失筹码可能直接结束或严重损害锦标赛权益。',icmPlayers:(left,paid)=>`剩余 ${left} 人 · ${paid} 个奖励名次`,icmStackRank:(rank,left)=>`筹码排名：第 ${rank}/${left}`,icmRisk:p=>`这次跟注会风险你 ${p}% 的筹码`,icmCovered:'下注者的筹码覆盖你：输掉可能直接出局。',icmCovers:'你的筹码覆盖下注者：输掉后仍有剩余筹码。',icmThreshold:(chip,icm,extra)=>`底池赔率要求 ${chip}% 胜率；ICM 将盈亏平衡点提高到 ${icm}%（增加 ${extra}%）。`,
+recFOLD:'弃牌',recCHECK:'过牌',recCALL:'跟注',recRAISETO:'加注到',recBET:'下注',recALLIN:'全押',
+bluffTitle:'诈唆评估',bluffVerdict:'结论',bluffWhy:'原因',bluffPlan:'被跟注或加注后',bluffGood:'较好的诈唆候选',bluffThin:'勉强的诈唆，需谨慎',bluffSemi:'半诈唆：弃牌率 + 听牌胜率',bluffNot:'不是诈唆，应为价值扩大底池',bluffNo:'不建议诈唆',
+intentBluff:'诈唆',intentSemiBluff:'半诈唆',intentValue:'价值',intentProtection:'保护',intentRangeBluff:'范围诈唆',intentRangeRaise:'范围加注',intentBluffCatch:'捉诈',intentCall:'跟注',intentCheck:'过牌',intentFold:'弃牌',
+bluffFoldCompare:(need,est)=>`此尺度约需 ${need}% 弃牌率 · 模型估计约 ${est}%`,bluffCalledEquity:e=>`被跟注时可用胜率约 ${e}%`,
+bluffReasonPassive:'对手在非常规行动顺序中的信息性过牌显示了弱势，范围里有较多可以弃掉的牌。',bluffReasonBlocker:'你的牌阻断了对手部分最强组合。',bluffReasonDraw:'诈唆被跟注后，听牌仍可能改善。',bluffReasonPosition:'最后行动能获得更多信息，施压更安全。',bluffReasonDry:'干燥牌面上对手的强听牌和可继续组合更少。',bluffReasonStation:'松而爱跟注的对手通常不会弃得足够多，诈唆收益较差。',bluffReasonMultiway:'还有多名对手，至少一人跟注的概率更高。',bluffReasonHistoryFolds:'这名对手在历史上面对施压的弃牌率高于其默认风格。',bluffReasonHistoryCalls:'这名对手在历史上比其默认风格更常跟注或反加。',bluffReasonStrength:'你正面对主动攻击，对手范围弃牌的可能性更低。',bluffReasonShowdown:'你的牌有摊牌价值；转成诈唆往往赶走更差的牌，只留下更强的牌。',bluffReasonRange:'这个行动来自位置和范围策略，而不是翻牌后的纯诈唆。',
+bluffPlanGiveUp:'被跟注后通常放弃，除非下张牌明显改善你的牌或故事；面对强力加注应弃牌。',bluffPlanDraw:'在完成或加强听牌的牌面上继续；遇到坏牌或强力加注时降速。',bluffPlanValue:'在安全牌面上继续做价值，但牌面或对手行动变危险时重新评估。',bluffPlanCatch:'跟注捉诈，不要再加注：更差的牌多半弃掉，更强的牌会继续。',bluffPlanFree:'免费看下张牌或进入摊牌，再根据新牌和对手行动重评。',bluffPlanFold:'现在弃牌保留积分，没有理由为诈唆继续投入。',bluffPlanFollow:'执行建议行动，再根据下张牌和对手回应重新评估。',
+bluffHistoryRead:(n,rate,delta,d)=>`对手历史：${n} 次面对施压的决策 · 学习弃牌率约 ${rate}% · ${delta>=0?'+':''}${delta}% 应用于${d}`,
+processGoodBad:'决策正确但结果输掉：你的选择符合正 EV 建议，短期波动不会把好决策变成错误。',processBadGood:'结果赢了但决策质量较差：至少一个选择损失了估算 EV，不能用结果倒推过程正确。',
+potUnopened:'未加注/跛入底池',potSingle:'单次加注底池',potThreeBet:'3-bet+ 底池',potMultiway:'多人底池',tableHeadsUp:'单挑',tableThree:'3 人桌',tableFour:'4 人桌',tableFive:'5 人桌',tableSixMax:'6 人桌',tableFullRing:'满员桌（7～9 人）',
+scenarioBtn:'场景练习器',scenarioBtnSub:'构造并练习任意德州扑克决策',scenarioTitle:'自定义决策场景',scenarioSub:'设置底牌、公共牌、位置、底池和对手后再分析。',scCards:'你的底牌',scBoard:'公共牌',scPos:'位置',scOpps:'对手数',scStack:'有效筹码（BB）',scPot:'底池',scCall:'需跟注',scProfile:'对手风格',scGame:'场景',scAction:'上一行动',scCardsHelp:'选择两张互不重复的底牌。',scBoardHelp:'翻牌前留空，翻牌后选择 3～5 张公共牌。',scEmptyCard:'— 空 —',scAnalyze:'分析场景',scSave:'保存场景',scShare:'复制分享链接',scSaved:'已保存场景',scClose:'关闭',scUnopened:'未开池',scLimp:'跛入',scRaise:'加注',scThreeBet:'3-bet',scCbet:'持续下注',scCheckRaise:'过牌加注',scAllin:'全押',scRecommendation:'建议行动',scEquity:'估算胜率',scPrice:'底池赔率',scConfidence:'置信度',scPlay:'先做决定',scDrill:'练习 10 个变化场景',
+resetData:'清除所有学习数据',resetInfo:'会删除终身统计、牌局历史、复盘、场景和未完成牌局；语言和奖励进度保留。此操作不可撤销。',resetConfirm:'确定删除所有统计、历史、复盘、场景和未完成牌局吗？',resetDone:'✓ 已清除',resetPoints:'彻底重置本桌积分（保留统计）',resetPointsConfirm:'确定重置本桌积分吗？未完成牌桌会被清除，但历史和学习统计会完整保留。',resetPointsDone:'✓ 本桌积分已重置，统计未删除',
+level:'级别 ',hand:'第 ',blindsUpA:'盲注将在 ',blindsUpB:' 手后上涨',autoNext:'自动下一手',coachLbl:'🧭 行动前提示',coachBtn:'提示',quit:'离桌',quitSng:'离桌吗？锦标赛会保存以便继续。',quitCash:'结束并离开本桌吗？',
+fold:'弃牌',check:'过牌',call:'跟注',allin:'全押',raiseTo:'加注到 ',betW:'下注 ',raiseW:'加注',thirdPot:'1/3 底池',halfPot:'1/2 底池',pot:'底池',raiseExact:'精确数额',raiseExactHelp:'输入合法的“加注到”积分数',raiseStepDown:'减少 1 个大盲',raiseStepUp:'增加 1 个大盲',raiseSliderHelp:'拖动或滚轮调整，每格 1 个大盲',
+actMenu:'◀ 菜单',actTurn:'◀ 轮到你',log:'行动记录',lastHand:'回放上一手',exportH:'导出历史',nextHand:'下一手 ▶',liveCoach:'🧭 行动前学习提示',coachScrollMore:'向下查看更多',waiting:'轮到你行动时，这里会显示建议。',
+react:'表情',reactHint:'发送一个牌桌表情',
+yourHand:'你的牌',position:'位置',actingOrder:'行动顺序',postflopOrder:'翻牌后顺序',winChance:'估算胜率',playersBehind:'身后玩家',openingDecision:'开池决策',raiseOrFold:'加注或弃牌，不跛入',draws:'听牌',outs:'补牌',unique:'张互不重复',shared:'重叠',countedOnce:'只计一次',dirtyOuts:'脏补牌',dirtyOutsInfoLbl:'什么是脏补牌？',dirtyOutsInfo:'脏补牌在牌面上能完成你的听牌，却经常不能赢得底池，例如让公共牌成对，或成为公共牌第四张同花色而让对手组成更大同花。判断胜率应优先使用干净补牌。',outQuality:'补牌质量',weightedOuts:'按对手范围调整后的补牌',weightedOutsNote:n=>`${n} 张原始补牌；若可能平分、被更大牌压制、同时改善公共牌，或面对估算范围时仍常落后，会按风险折减。`,overcardOuts:'高张成对补牌',pairImproveOuts:'三条 / 两对补牌',redrawOuts:'葫芦 / 四条重抽补牌',potOdds:'底池赔率',impliedOdds:'隐含赔率',realisticNeed:'现实所需胜率',bestCaseNeed:'最好情况',effectiveNeed:'有效跟注临界胜率',effectiveNeedNote:'综合位置、对手范围和锦标赛压力后，跟注需要达到的胜率。',effectiveStack:'有效筹码',priceToCall:'跟注价格',yourStack:'你的筹码',sugSize:'建议尺度',recommended:'建议行动',why:'简明原因',liveMath:'即时计算',
+thisGame:'本桌',lifetime:'累计',handsPW:'手数 / 获胜',net:'净积分',biggestPot:'最大获胜底池',vpipPfr:'VPIP / PFR',aggF:'激进系数',wonSd:'W$SD（摊牌胜率）',wtsd:'WTSD（入池后摊牌率）',threeBet:'3-bet',evLeak:'相对建议损失的估算 EV',coachFollowed:'建议一致率',followedCoach:'次符合建议',coachSaid:'建议',youChose:'你选择',
+revAllHands:'全部已保存手牌',revReplay:'点击牌局即可回放',revMidBanner:'已恢复进行中的手牌',handNavP:'‹ 上一手',handNavN:'下一手 ›',streetNavP:'‹ 上一街',streetNavN:'下一街 ›',jumpHand:'跳到第几手',jumpGo:'跳转',close:'关闭',replayTitle:'手牌回放',preflop:'翻牌前',flop:'翻牌',turnSt:'转牌',riverSt:'河牌',showdown:'摊牌',fullHand:'完整手牌',noHands:'本桌还没有完成的手牌。',won:'获胜',foldedTag:'已弃牌',ord:n=>`第 ${n} 名`,
+cfTitle:'反事实决策对比',cfSub:'比较你在每个决策点选择不同行动时的估算结果。',cfDecision:n=>`决策 ${n}`,cfActual:'你的选择',cfCoach:'建议',cfBest:'最高估算 EV',cfEv:'估算 EV',cfLoss:'与最佳选项的差距',cfCaptured:'牌桌当时已记录',cfEstimated:'事后重建估计',
+cfFoldWhy:'弃牌不再风险更多积分，从现在开始的额外筹码 EV 为 0。',cfCheckWhy:eq=>`过牌不花积分，保留手牌并在不扩大底池的情况下实现约 ${eq}% 胜率。`,cfCallWhy:(eq,need,amt)=>`跟注投入 ${amt}，估计可用胜率约 ${eq}%，而临界值为 ${need}%。`,cfRaiseWhy:(eq,amt)=>`加注到 ${amt}，将约 ${eq}% 胜率与对手弃掉弱范围的估计弃牌率结合。`,cfAssumption:'EV 用于判断方向，不是结果保证：后续牌和对手反应仍然不确定。',
+youWin:'你赢得锦标赛！',playAgain:'再开一桌',youWinSub:(n,h)=>`你在 ${h} 手后击败了 ${n} 名对手。`,bustedTitle:p=>`${p}出局`,bustedSub:h=>`你坚持了 ${h} 手。`,evTotal:'📉 总估算 EV 损失',deviations:'个偏差',cleanGame:'没有检测到相对建议的 EV 损失。',smallerLeaks:'个较小漏洞'
+});
+try{lang=localStorage.getItem('sg_poker_lang')||(HAS_DOM?'zh':'en');}catch(e){lang=HAS_DOM?'zh':'en';}
 if(!TR[lang])lang='en';
 function T(k){return (TR[lang]&&TR[lang][k])!==undefined?TR[lang][k]:TR.en[k];}
 const FOUR_COLOR_DECK_KEY='sg_poker_four_color';
@@ -796,7 +849,7 @@ function renderReviewDecisions(games){
   $('revDecisions').innerHTML=rows.map((d,i)=>{
     const label=LEAK_LABEL[d.spot]?T(LEAK_LABEL[d.spot]):reviewStreetLabel(d.stage);
     const when=new Date(d.game.t).toLocaleDateString();
-    return `<div class="rev-decision"><div class="rev-decision-main"><div class="rev-decision-title">${label} · ${T('hand')}#${d.hand}</div>`+
+    return `<div class="rev-decision"><div class="rev-decision-main"><div class="rev-decision-title">${label} · ${localizedHandNumber(d.hand)}</div>`+
       `<div class="rev-decision-meta">${when} · ${reviewStreetLabel(d.stage)} · ${T('coachSaid')} ${recWord(d.rec)} · ${T('youChose')} ${actWord(d.action)}</div></div>`+
       `<div class="rev-decision-actions"><span class="rev-decision-ev">−${usd(d.evLoss)} EV</span>`+
       (d.rangeSnapshots?.length?`<button type="button" class="rev-range-btn" data-range-decision="${i}">${T('revExploreRange')}</button>`:'')+
@@ -1475,6 +1528,8 @@ function rewardNextUnlockText(){
 function renderRewardTop(){
   if(!HAS_DOM)return;
   const el=$('tRewards'); if(!el||!rewardsEnabled())return;
+  if(lang==='zh'){el.classList.add('hidden');return;}
+  el.classList.remove('hidden');
   const rs=rewardStateSafe(); if(!rs){el.textContent='';return;}
   const p=rewardLevelProgress(rs);
   const next=typeof getNextRewardUnlock==='function'?getNextRewardUnlock():null;
@@ -1483,6 +1538,7 @@ function renderRewardTop(){
   el.title=next?`Open rewards room · Next level ${next.level}: ${next.label}`:'Open rewards room · All unlocks claimed';
 }
 function rewardSummaryLine(summary){
+  if(lang==='zh')return '';
   if(!summary||summary.duplicate||(!summary.xp&&!summary.missions?.length&&!summary.records?.length&&!summary.unlocks?.length&&!summary.trophies?.length&&!summary.koBonus))return '';
   const bits=[];
   if(summary.koBonus)bits.push(`<b>KO bonus +${usd(summary.koBonus)}</b>`);
@@ -1494,6 +1550,7 @@ function rewardSummaryLine(summary){
   return `<div class="reward-line">Arcade rewards: ${bits.join(' · ')}</div>`;
 }
 function renderRewardReview(){
+  if(lang==='zh')return '';
   const rs=rewardStateSafe(); if(!rs)return '';
   const p=rewardLevelProgress(rs);
   const active=(globalThis.REWARD_MISSIONS||[]).map(def=>{
@@ -1507,6 +1564,7 @@ function renderRewardReview(){
     `<div style="margin-top:4px;">${active}</div></div>`;
 }
 function renderRewardEndSummary(summary){
+  if(lang==='zh')return '';
   const rs=rewardStateSafe(); if(!rs)return '';
   const parts=[];
   if(summary&&summary.koBonus)parts.push(`KO bonus +${usd(summary.koBonus)}`);
@@ -1600,6 +1658,7 @@ function rewardBurst(summary){
   if(count) flyChips(c.x,c.y+4,tx,ty,count,0);
 }
 function showRewardToast(summary){
+  if(lang==='zh')return;
   if(!HAS_DOM||!summary||summary.duplicate)return;
   const el=$('rewardToast');
   if(!el||(!summary.xp&&!summary.toasts?.length&&!summary.unlocks?.length&&!summary.records?.length&&!summary.trophies?.length&&!summary.koBonus))return;
@@ -1786,14 +1845,17 @@ function nudgeLayoutOverlaps(overlapGap){
       if(pinAt>=0&&(i===pinAt||j===pinAt)){
         const other=i===pinAt?sj:si;
         const lo=parseFloat(other.style.left)||0,to=parseFloat(other.style.top)||0;
-        other.style.left=(lo+ax)+'px'; other.style.top=(to+ay)+'px';
+        /* (ax, ay) points from j toward i. Keep the hero pinned and move the
+           other seat away in the correct direction for whichever side it is. */
+        const sign=i===pinAt?-1:1;
+        other.style.left=(lo+sign*ax)+'px'; other.style.top=(to+sign*ay)+'px';
         moved=true;
         continue;
       }
       const li=parseFloat(si.style.left)||0,ti=parseFloat(si.style.top)||0;
       const lj=parseFloat(sj.style.left)||0,tj=parseFloat(sj.style.top)||0;
-      si.style.left=(li-ax)+'px'; si.style.top=(ti-ay)+'px';
-      sj.style.left=(lj+ax)+'px'; sj.style.top=(tj+ay)+'px';
+      si.style.left=(li+ax)+'px'; si.style.top=(ti+ay)+'px';
+      sj.style.left=(lj-ax)+'px'; sj.style.top=(tj-ay)+'px';
       moved=true;
     }
     if(!moved) break;
@@ -1839,7 +1901,9 @@ function resolveCenterClearance(W,H,cx,cy,cBox,pad,overlapGap){
 }
 /* Uniform oval: equal arc-length spacing + angular overlap spread (no edge clamp stacking) */
 function layoutOvalSeats(felt,W,H,cx,cy){
-  const compact=document.body.classList.contains('phone-landscape');
+  const fl=document.body.classList.contains('fl');
+  const lls=document.body.classList.contains('lls');
+  const compact=fl||lls;
   const n=state.players.length;
   const pad={l:8,r:8,t:8,b:6};
   if(document.body.classList.contains('act-panel-open')&&useLandscapePanel()) pad.r=56;
@@ -1848,16 +1912,14 @@ function layoutOvalSeats(felt,W,H,cx,cy){
   let sW=118,sH=48;
   for(const p of state.players){
     const s=$('seat'+p.i);
-    if(s&&s.offsetHeight){
-      if(!p.isHuman)sW=Math.max(sW,s.offsetWidth);
-      sH=Math.max(sH,s.offsetHeight);
-    }
+    if(s&&s.offsetHeight){sW=Math.max(sW,s.offsetWidth);sH=Math.max(sH,s.offsetHeight);}
   }
   const lift=compact?14:28;
   const maxRx=(W-sW)/2-pad.l, maxRy=(H-sH)/2-pad.t;
   let rx=Math.min(compact?W*0.42:W*0.41,Math.max(50,maxRx));
   let ry=Math.min(compact?H*0.42:H*0.40,Math.max(compact?32:50,maxRy));
-  /* phone landscape: flatter oval + lower center so top seats clear the edge */
+  /* phone landscape (native lls + rotated-portrait fl): flatter oval + lower center
+     so the top seats clear the edge instead of crowding it */
   if(compact&&W>H&&n<=6){
     ry=Math.min(ry,H*0.34);
     cy=H*0.53;
@@ -1892,6 +1954,19 @@ function layoutOvalSeats(felt,W,H,cx,cy){
       resolveOvalAngles(angs,rx,ry,cx,cy,lift,overlapGap);
     }
   }
+  if(fl&&W>H&&n>1){
+    const chord=2*rx*Math.sin(Math.PI/n);
+    const gap=chord/(n-1);
+    felt.style.setProperty('--seatScale',String(Math.max(n<=6?0.92:0.75,Math.min(1,gap/(sW+6)))));
+  }
+  /* short landscape: drop hero slightly below the oval so the board can sit between */
+  if(lls&&W>H){
+    const hero=state.players.find(p=>p.isHuman);
+    if(hero){
+      const seat=$('seat'+hero.i);
+      if(seat) seat.style.top=(Math.min(H-pad.b,parseFloat(seat.style.top)+10))+'px';
+    }
+  }
 }
 function layoutDesktopSeats(felt,W,H,cx,cy){
   layoutOvalSeats(felt,W,H,cx,cy);
@@ -1899,26 +1974,23 @@ function layoutDesktopSeats(felt,W,H,cx,cy){
 /* Mobile: hero bottom-center; opponents on an upper arc. Board sits above hero. */
 function layoutMobileSeats(felt){
   const W=felt.clientWidth,H=felt.clientHeight,cx=W/2,n=state.players.length;
-  const compact=document.body.classList.contains('phone-landscape');
+  const fl=document.body.classList.contains('fl')||document.body.classList.contains('lls');
   let sW=102,sH=100;
   for(const p of state.players){
     const s=$('seat'+p.i);
-    if(s&&s.offsetHeight){
-      if(!p.isHuman)sW=Math.max(sW,s.offsetWidth);
-      sH=Math.max(sH,s.offsetHeight);
-    }
+    if(s&&s.offsetHeight){sW=Math.max(sW,s.offsetWidth);sH=Math.max(sH,s.offsetHeight);}
   }
   const shrink=Math.max(0,n-4)*0.02;
   /* wide-short landscape: spread opponents across the full width on a flat top arc */
   const land=W>H;
   const rx=land
     ? Math.max(120,(W-sW)/2-6)
-    : Math.min(W*(0.40-shrink)*(compact?0.90:1),(W-sW)/2-8);
+    : Math.min(W*(0.40-shrink)*(fl?0.90:1),(W-sW)/2-8);
   const ry=land
     ? Math.min(H*0.14,Math.max(12,H*0.22-sH*0.15))
-    : Math.min(H*(compact?0.32:0.35)-shrink*H*0.25,H*0.36);
-  const ocy=H*(compact?0.41:0.43);
-  const topY=land?(compact?8:sH*0.42):sH*0.42;
+    : Math.min(H*(fl?0.32:0.35)-shrink*H*0.25,H*0.36);
+  const ocy=H*(fl?0.41:0.43);
+  const topY=land?(fl||document.body.classList.contains('lls')?8:sH*0.42):sH*0.42;
   const opponents=state.players.filter(p=>!p.isHuman);
   const m=opponents.length;
   /* landscape: if the even per-seat width is tighter than a plate, scale seats to fit */
@@ -1966,40 +2038,78 @@ function layoutMobileSeats(felt){
     if(seat&&seat.offsetHeight){
       seat.style.left=cx+'px';
       seat.style.top=(H-seat.offsetHeight)+'px';
-      const box=elementRectSeatLayout(seat);
-      seat.style.top=((parseFloat(seat.style.top)||0)+(H-2-box.b))+'px';
     }
   }
 }
-/* Once community cards are visible, keep opponents in side rails. This leaves a
-   dedicated center lane for the board and a dedicated bottom lane for the hero. */
-function layoutPhoneBoardSeats(felt,W,H){
+/* Deterministic rotated-portrait (fl) layout: hero pinned bottom-center, opponents
+   on a top arc (one or two rows) evenly spread across the width, with a single
+   computed scale so any player count fits any viewport without overlap. The center
+   pot/board is placed in the middle band by positionCenterArea(). */
+function layoutCompactRows(felt,W,H){
+  const cx=W/2;
+  const sideL=8,sideR=(document.body.classList.contains('act-panel-open')&&useLandscapePanel())?56:8;
+  const hasBoard=$('board')?.classList.contains('has-cards');
+  const topPad=6,botPad=2,gapV=10,gapH=5,rowGap=6,boardH=hasBoard?84:24;
+  /* measure unscaled sizes */
   felt.style.setProperty('--seatScale','1');
-  const padX=8,padY=6;
   const hero=state.players.find(p=>p.isHuman);
-  const opponents=state.players.filter(p=>!p.isHuman);
-  const columns=[opponents.filter((_,i)=>i%2===0),opponents.filter((_,i)=>i%2===1)];
-  const placeColumn=(list,right)=>{
+  let pw=70,oppH=40,heroH=60;
+  for(const p of state.players){
+    const s=$('seat'+p.i); if(!s||!s.offsetHeight)continue;
+    const plate=s.querySelector('.plate');
+    const w=plate?plate.offsetWidth:s.offsetWidth;
+    if(p.isHuman){ heroH=Math.max(heroH,s.offsetHeight); }
+    else { pw=Math.max(pw,w); oppH=Math.max(oppH,s.offsetHeight); }
+  }
+  const m=state.players.length-1;            // opponents
+  const usableW=W-sideL-sideR;
+  const sSingle=m>1?(usableW-(m-1)*gapH)/(m*pw):1;
+  const twoRow=m>=4&&sSingle<0.9;
+  let s,rows;
+  if(!twoRow){
+    const sV=(H-topPad-botPad-2*gapV-boardH)/(oppH+14+heroH);
+    s=Math.max(0.5,Math.min(1,sSingle,sV));
+    rows=[m];
+  }else{
+    const back=Math.ceil(m/2),front=m-back,per=Math.max(back,front);
+    const sH=(usableW-(per-1)*gapH)/(per*pw);
+    const sV=(H-topPad-botPad-rowGap-2*gapV-boardH)/(2*oppH+heroH);
+    s=Math.max(0.45,Math.min(1,sH,sV));
+    rows=[back,front];
+  }
+  felt.style.setProperty('--seatScale',String(s));
+  const seatW=pw*s, oH=oppH*s, hH=heroH*s;
+  const xL=sideL+seatW/2, xR=W-sideR-seatW/2;
+  /* hero bottom-center */
+  if(hero){
+    const hs=$('seat'+hero.i);
+    if(hs){ hs.style.left=cx+'px'; hs.style.top=Math.max(topPad,H-botPad-hH)+'px'; }
+  }
+  /* opponents */
+  const opps=state.players.filter(p=>!p.isHuman);
+  const place=(list,topY)=>{
+    const c=list.length;
     list.forEach((p,i)=>{
-      const seat=$('seat'+p.i);if(!seat||!seat.offsetHeight)return;
-      const targetY=padY+(H-2*padY)*(i+0.5)/list.length;
-      seat.style.left=(right?W:0)+'px';seat.style.top=targetY+'px';
-      let rect=elementRectSeatLayout(seat);
-      const targetX=right?W-padX-rect.w/2:padX+rect.w/2;
-      seat.style.left=((parseFloat(seat.style.left)||0)+targetX-rect.cx)+'px';
-      seat.style.top=((parseFloat(seat.style.top)||0)+targetY-rect.cy)+'px';
-      clampSeatLayout(seat,W,H,{l:padX,r:padX,t:padY,b:padY});
+      const seat=$('seat'+p.i); if(!seat)return;
+      const t=c>1?i/(c-1):0.5;
+      const x=(c>1)?(xL+(xR-xL)*t):cx;
+      seat.style.left=x+'px';
+      seat.style.top=topY+'px';
     });
   };
-  placeColumn(columns[0],false);placeColumn(columns[1],true);
-  if(hero){
-    const seat=$('seat'+hero.i);
-    if(seat&&seat.offsetHeight){
-      seat.style.left=(W/2)+'px';seat.style.top=H+'px';
-      const rect=elementRectSeatLayout(seat);
-      seat.style.left=((parseFloat(seat.style.left)||0)+W/2-rect.cx)+'px';
-      seat.style.top=((parseFloat(seat.style.top)||0)+H-2-rect.b)+'px';
-    }
+  if(rows.length===1){
+    const dip=14*s, c=opps.length;
+    opps.forEach((p,i)=>{
+      const seat=$('seat'+p.i); if(!seat)return;
+      const t=c>1?i/(c-1):0.5, u=2*t-1;
+      const x=(c>1)?(xL+(xR-xL)*t):cx;
+      seat.style.left=x+'px';
+      seat.style.top=(topPad+dip*u*u)+'px';
+    });
+  }else{
+    const back=rows[0];
+    place(opps.slice(0,back),topPad);
+    place(opps.slice(back),topPad+oH+rowGap);
   }
 }
 /* The empty preflop board is a layout placeholder, not a real obstacle. Treat
@@ -2029,30 +2139,20 @@ function clampBetChipToFelt(x,y,w,h,W,H,felt){
   if(d<=1)return {x,y};
   return {x:cx+dx/d,y:cy+dy/d};
 }
-let layoutFrame=0;
-function scheduleLayoutSeats(){
-  if(!HAS_DOM||layoutFrame)return;
-  const queue=typeof requestAnimationFrame==='function'?requestAnimationFrame:(fn=>setTimeout(fn,0));
-  layoutFrame=queue(()=>{layoutFrame=0;layoutSeats();});
-}
 function layoutSeats(){
   if(!HAS_DOM||!state||BENCH)return;
   const felt=$('felt');
   const W=felt.clientWidth,H=felt.clientHeight,cx=W/2,cy=H/2;
-  /* Every phone game uses the same logical landscape table in either orientation. */
+  /* mobile portrait: upper arc + hero bottom; mobile landscape + desktop: uniform oval */
   let usedOval=false;
   if(isMobile()){
-    if(document.body.classList.contains('phone-landscape')){
-      if($('board')?.classList.contains('has-cards'))layoutPhoneBoardSeats(felt,W,H);
-      else layoutMobileSeats(felt);
-      usedOval=true;
-    }
+    if(document.body.classList.contains('fl')){ layoutCompactRows(felt,W,H); }
     else if(W>H){ layoutOvalSeats(felt,W,H,cx,cy); usedOval=true; }
     else layoutMobileSeats(felt);
   }else{ layoutDesktopSeats(felt,W,H,cx,cy); usedOval=true; }
   positionCenterArea();
   if(usedOval){
-    const compact=document.body.classList.contains('phone-landscape');
+    const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
     const pad={l:8,r:8,t:8,b:6};
     if(document.body.classList.contains('act-panel-open')&&useLandscapePanel()) pad.r=56;
     resolveCenterClearance(W,H,cx,cy,centerAreaBox(felt),pad,compact?1:2);
@@ -2135,7 +2235,7 @@ function layoutSeats(){
   }
   positionCenterArea();
   if(usedOval){
-    const compact=document.body.classList.contains('phone-landscape');
+    const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
     const pad={l:8,r:8,t:8,b:6};
     if(document.body.classList.contains('act-panel-open')&&useLandscapePanel()) pad.r=56;
     resolveCenterClearance(W,H,cx,cy,centerAreaBox(felt),pad,compact?1:2);
@@ -2146,14 +2246,14 @@ function elementRectFelt(el){
   const l=el.offsetLeft,t=el.offsetTop,w=el.offsetWidth,h=el.offsetHeight;
   return {l,t,r:l+w,b:t+h,w,h,cx:l+w/2,cy:t+h/2};
 }
-/* Layout overlap box: plate, visible hero cards, action text and turn timer. */
+/* Layout overlap box: plate (+ hero hole on compact) — avoids false stacks from hole cards */
 function elementRectSeatLayout(el){
   const plate=el.querySelector('.plate');
   if(!plate||!plate.offsetHeight) return elementRectFelt(el);
   let l=el.offsetLeft+plate.offsetLeft,t=el.offsetTop+plate.offsetTop;
   let r=l+plate.offsetWidth,b=t+plate.offsetHeight;
-  const compact=document.body.classList.contains('phone-landscape');
-  if(compact&&(el.classList.contains('human')||el.classList.contains('revealed'))){
+  const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
+  if(compact&&el.classList.contains('human')){
     const hole=el.querySelector('.hole');
     if(hole&&hole.offsetHeight){
       const hl=el.offsetLeft+hole.offsetLeft,ht=el.offsetTop+hole.offsetTop;
@@ -2166,22 +2266,6 @@ function elementRectSeatLayout(el){
     const al=el.offsetLeft+act.offsetLeft,at=el.offsetTop+act.offsetTop;
     l=Math.min(l,al); r=Math.max(r,al+act.offsetWidth);
     b=Math.max(b,at+act.offsetHeight);
-  }
-  const timer=el.querySelector('.tmr');
-  if(timer&&timer.offsetHeight&&timer.textContent.trim()){
-    const tl=el.offsetLeft+timer.offsetLeft,tt=el.offsetTop+timer.offsetTop;
-    l=Math.min(l,tl); t=Math.min(t,tt);
-    r=Math.max(r,tl+timer.offsetWidth); b=Math.max(b,tt+timer.offsetHeight);
-  }
-  const transform=getComputedStyle(el).transform;
-  if(transform&&transform!=='none'){
-    const match=transform.match(/^matrix\(([^,]+)/);
-    const scale=match?Math.abs(parseFloat(match[1])):1;
-    if(Number.isFinite(scale)&&Math.abs(scale-1)>0.001){
-      const ox=el.offsetLeft+el.offsetWidth/2,oy=el.offsetTop;
-      l=ox+(l-ox)*scale; r=ox+(r-ox)*scale;
-      t=oy+(t-oy)*scale; b=oy+(b-oy)*scale;
-    }
   }
   return {l,t,r,b,w:r-l,h:b-t,cx:(l+r)/2,cy:(t+b)/2};
 }
@@ -2239,12 +2323,12 @@ function boardCardMetrics(){
     if(!isNaN(g))gap=g;
   }
   if(!cardW){
-    if(document.body.classList.contains('phone-landscape'))cardW=54;
+    if(document.body.classList.contains('fl'))cardW=50;
     else if(isMobile())cardW=50;
     else cardW=54;
   }
   if(!gap){
-    if(document.body.classList.contains('phone-landscape'))gap=6;
+    if(document.body.classList.contains('fl'))gap=3;
     else if(isMobile())gap=4;
     else gap=7;
   }
@@ -2276,7 +2360,7 @@ function centerAreaBox(felt){
 }
 /* Hero overlap box for center lift (hole + plate on compact mobile). */
 function heroCenterClearRect(seat){
-  const compact=document.body.classList.contains('phone-landscape');
+  const compact=document.body.classList.contains('fl')||document.body.classList.contains('lls');
   if(compact&&seat.classList.contains('human')) return elementRectSeatLayout(seat);
   const plate=seat.querySelector('.plate');
   if(plate&&plate.offsetHeight){
@@ -2292,12 +2376,10 @@ function settleCenterVertical(center,felt,W,H,minPct,maxPct){
   const hSeat=hero?$('seat'+hero.i):null;
   const gap=10;
   let topB=0, topT=Infinity;
-  const centerBox=centerRectDOM(center);
   for(const p of state.players){
     if(p.isHuman)continue;
     const s=$('seat'+p.i); if(!s?.offsetHeight)continue;
     const r=elementRectSeatLayout(s);
-    if(r.r+gap<=centerBox.l||r.l-gap>=centerBox.r)continue;
     if(r.t<topT){ topT=r.t; topB=r.b; }
     else if(r.t===topT) topB=Math.max(topB,r.b);
   }
@@ -2341,8 +2423,7 @@ function positionCenterArea(){
   const felt=$('felt'), center=$('centerArea');
   if(!felt||!center)return;
   const W=felt.clientWidth,H=felt.clientHeight,n=state.players.length;
-  const hasBoard=!!$('board')?.classList.contains('has-cards');
-  const boardMin=hasBoard?boardMinWidth():0;
+  const boardMin=boardMinWidth();
   const maxW=Math.max(boardMin,Math.min(W*0.88,300-n*8));
   if(!isMobile()){
     center.style.top='';
@@ -2357,16 +2438,23 @@ function positionCenterArea(){
   }
   center.style.left='50%';
   center.style.width='auto';
-  center.style.minWidth=hasBoard?boardMin+'px':'';
+  center.style.minWidth=boardMin+'px';
   center.style.maxWidth=maxW+'px';
+  const fl=document.body.classList.contains('fl');
+  /* rotated-portrait post-flop: board+pot laid out in a row (see CSS) so the pot
+     renders below the flop after the 90° rotation — let it size to its content. */
+  if(fl&&$('board')?.classList.contains('has-cards')){
+    center.style.minWidth='';
+    center.style.maxWidth='none';
+  }
   const land=W>H;
-  const base=land?50:40;
+  const base=land?50:(fl?36:40);
   center.style.top=base+'%';
   if(land){
     settleCenterVertical(center,felt,W,H,28,base);
     liftCenterAboveHero(center,felt,W,H,24,parseFloat(center.style.top)||base);
   }
-  else liftCenterAboveHero(center,felt,W,H,38,base);
+  else liftCenterAboveHero(center,felt,W,H,fl?34:38,base);
 }
 function positionDealerBtn(){
   if(!HAS_DOM||!state)return;
@@ -2439,7 +2527,7 @@ function render(winners){
   renderRewardTop();
   const potCollected=state.players.reduce((s,p)=>s+p.totalBet-p.bet,0);
   const totalPot=state.players.reduce((s,p)=>s+p.totalBet,0);
-  $('pot').textContent= totalPot>0?`Pot: ${money(totalPot)}`:'';
+  $('pot').textContent= totalPot>0?`${lang==='zh'?'底池':'Pot'}: ${money(totalPot)}`:'';
   setHTML($('potChips'),chipStackHTML(potCollected,true));
   setHTML($('board'),state.board.map((c,i)=>cardHTML(c,false,i>=prevBoardLen)).join(''));
   prevBoardLen=state.board.length;
@@ -2457,10 +2545,10 @@ function render(winners){
     seat.classList.toggle('busted', p.out);
     seat.classList.toggle('winner', !!(winners&&winners.includes(p)));
     seat.classList.toggle('revealed', !!p.revealed&&!p.isHuman&&!p.folded&&!p.out&&p.hole.length>0);
-    $('chips'+p.i).textContent= p.out?'OUT':money(p.chips)+(p.allIn?' · all-in':'');
+    $('chips'+p.i).textContent= p.out?(lang==='zh'?'离桌':'OUT'):money(p.chips)+(p.allIn?' · '+T('allin'):'');
     $('pos'+p.i).textContent= p.out?'':(p.pos||'');
-    const phoneLandscape=document.body.classList.contains('phone-landscape');
-    $('act'+p.i).textContent=(phoneLandscape&&/^(SB|BB) /.test(p.lastAct))?'':p.lastAct;
+    const lls=document.body.classList.contains('lls');
+    $('act'+p.i).textContent=(lls&&/^(SB|BB) /.test(p.lastAct))?'':p.lastAct;
     const hole=$('hole'+p.i);
     if(p.hole.length===0) setHTML(hole,'');
     else if(p.isHuman) setHTML(hole,p.hole.map(c=>cardHTML(c,false,true)).join(''));
@@ -2497,8 +2585,9 @@ function useLandscapePanel(){
 }
 function syncActPanelMode(){
   if(!HAS_DOM)return;
-  /* Phone landscape uses the always-visible bottom dock, never a slide-out panel. */
-  const on=useLandscapePanel()&&!document.body.classList.contains('phone-landscape');
+  /* fl (rotated portrait) and lls (native landscape) both use the always-visible bottom
+     action dock, not the slide-out right-side panel */
+  const on=useLandscapePanel()&&!document.body.classList.contains('fl')&&!document.body.classList.contains('lls');
   document.body.classList.toggle('act-panel-mode',on);
   if(!on){
     document.body.classList.remove('act-panel-open','act-panel-collapsed');
@@ -2524,7 +2613,7 @@ function setActBar(open){
 function syncActFab(){
   if(!HAS_DOM||!isMobile())return;
   const fab=$('actFab'),g=$('game');
-  if(document.body.classList.contains('phone-landscape')){ if(fab)fab.classList.add('hidden'); return; }
+  if(document.body.classList.contains('fl')){ if(fab)fab.classList.add('hidden'); return; }
   if(!fab||!g||g.classList.contains('hidden')||!useLandscapePanel()){
     if(fab)fab.classList.add('hidden');
     return;
@@ -2535,26 +2624,24 @@ function syncActFab(){
   fab.textContent=onTurn?T('actTurn'):T('actMenu');
   fab.classList.toggle('pulse',onTurn&&!open);
 }
-/* Keep one logical phone-landscape UI; `fl` only supplies the physical rotation. */
+/* force landscape on phones: rotate the whole game 90° when held portrait */
 function updateOrient(){
   if(!HAS_DOM)return;
   const g=$('game'); if(!g)return;
-  const portrait=window.innerHeight>=window.innerWidth;
+  const portrait=window.innerHeight>window.innerWidth;
   const phone=Math.min(window.innerWidth,window.innerHeight)<=620;
-  const active=!g.classList.contains('hidden');
-  const phoneLandscape=active&&phone;
-  const rotated=phoneLandscape&&portrait;
-  document.body.classList.toggle('phone-landscape',phoneLandscape);
-  document.body.classList.toggle('phone-landscape-narrow',phoneLandscape&&Math.max(window.innerWidth,window.innerHeight)<=700);
-  document.body.classList.toggle('fl',rotated);
-  document.body.classList.remove('lls');
+  const on=portrait&&phone&&!g.classList.contains('hidden');
+  document.body.classList.toggle('fl',on);
+  /* genuine phone landscape (short, wide): compact oval + bottom control dock */
+  const landShort=!on&&!g.classList.contains('hidden')&&window.innerWidth>window.innerHeight&&Math.min(window.innerWidth,window.innerHeight)<=500;
+  document.body.classList.toggle('lls',landShort);
   const bar=$('actionbar');
   const tb=$('topbar');
   /* everything stays INSIDE the rotated frame so the menu (top) and action bar (bottom)
      read in the same landscape orientation as the table */
   if(tb&&tb.parentNode!==g) g.insertBefore(tb,g.firstChild);
   if(bar&&bar.parentNode!==g) g.appendChild(bar);
-  if(rotated){
+  if(on){
     g.style.width=window.innerHeight+'px';
     g.style.height=window.innerWidth+'px';
     g.style.transform=`translateX(${window.innerWidth}px) rotate(90deg)`;
@@ -2608,16 +2695,16 @@ function coachProseHtml(why,extra){
   return`<div class="why">${paras.map(t=>`<p class="why-p">${t}</p>`).join('')}</div>`;
 }
 function coachDetailsLabel(){
-  return lang==='fr'?'Voir l’analyse complète':lang==='es'?'Ver análisis completo':'See full analysis';
+  return lang==='zh'?'查看完整分析':lang==='fr'?'Voir l’analyse complète':lang==='es'?'Ver análisis completo':'See full analysis';
 }
 function coachDecisionLabel(){
-  return lang==='fr'?'Action recommandée':lang==='es'?'Acción recomendada':'Recommended action';
+  return lang==='zh'?'建议行动':lang==='fr'?'Action recommandée':lang==='es'?'Acción recomendada':'Recommended action';
 }
 function coachReasonLabel(){
-  return lang==='fr'?'Pourquoi':lang==='es'?'Por qué':'Why';
+  return lang==='zh'?'简明原因':lang==='fr'?'Pourquoi':lang==='es'?'Por qué':'Why';
 }
 function coachMathLabel(){
-  return lang==='fr'?'Calculs en direct':lang==='es'?'Cálculos en vivo':'Live math';
+  return lang==='zh'?'即时计算':lang==='fr'?'Calculs en direct':lang==='es'?'Cálculos en vivo':'Live math';
 }
 function coachMetric(label,value,cls=''){
   if(!value)return'';
@@ -2960,13 +3047,13 @@ function renderFeedback(net){
   const el=$('coachFeed');
   el.classList.remove('hidden');
   const n=state.humanDecisions.length, f=state.humanDecisions.filter(d=>d.followed).length;
-  let html=`<b>${T('hand')}#${state.handNum}:</b> <span class="${net>=0?'pos':'neg'}">${net>=0?'+':'−'}${usd(Math.abs(net))}</span>`;
+  let html=`<b>${localizedHandNumber(state.handNum)}:</b> <span class="${net>=0?'pos':'neg'}">${net>=0?'+':'−'}${usd(Math.abs(net))}</span>`;
   if(n>0){
     html+=` · ${T('followedCoach')} ${f}/${n}`;
     for(const d of state.humanDecisions.filter(x=>!x.followed)){
       const coachChoice=(d.rec==='RAISE'||d.rec==='ALLIN')&&d.raiseTo>0?`${recWord(d.rec)} ${usd(d.raiseTo)}`:recWord(d.rec);
       const playerChoice=d.action==='raise'&&d.chosenRaiseTo>0?`${actWord(d.action)} ${usd(d.chosenRaiseTo)}`:actWord(d.action);
-      html+=`<div class="dev">${d.stage}: ${T('coachSaid')} ${coachChoice}, ${T('youChose')} ${playerChoice}${d.evLoss>0?` <span class="neg">(−${usd(d.evLoss)} EV)</span>`:''}</div>`;
+      html+=`<div class="dev">${reviewStreetLabel(d.stage)}: ${T('coachSaid')} ${coachChoice}, ${T('youChose')} ${playerChoice}${d.evLoss>0?` <span class="neg">(−${usd(d.evLoss)} EV)</span>`:''}</div>`;
     }
     if(f===n&&net<0)html+=`<div class="dev">🎯 ${T('processGoodBad')}</div>`;
     else if(f<n&&net>0)html+=`<div class="dev">⚠️ ${T('processBadGood')}</div>`;
@@ -2992,6 +3079,9 @@ function renderStats(){
   const fp=S=>S.decisions>0?Math.round(100*S.followed/S.decisions)+'%':'—';
   const pof=(a,b)=>b>0?Math.round(100*(a||0)/b)+'%':'—';
   const af=(s.aCalls||0)>0?((s.aBets||0)/s.aCalls).toFixed(1):((s.aBets||0)>0?'∞':'—');
+  const threeBet=pof(s.threeBetH,s.threeBetOpp);
+  const wtsd=pof(s.sdSeen,s.sawFlopH);
+  const wsd=pof(s.sdWon,s.sdSeen);
   const cash=isCashGame();
   const blind=cash?(state.cfg?.startBlind||state.bb||1):1;
   const bbNet=cash?Math.round((s.net/blind)*10)/10:0;
@@ -3007,9 +3097,11 @@ function renderStats(){
       :`<div class="srow"><span>${T('net')}</span><b>${s.net>=0?'+':'−'}${usd(Math.abs(s.net))}</b></div>`)+
     `<div class="srow"><span>${T('biggestPot')}</span><b>${s.biggest?usd(s.biggest):'—'}</b></div>`+
     `<div class="srow"><span>${T('vpipPfr')}</span><b>${pof(s.vpipH,s.hands)} / ${pof(s.pfrH,s.hands)}</b></div>`+
+    `<div class="srow"><span>${T('threeBet')}</span><b>${threeBet}</b></div>`+
     `<div class="srow"><span>${T('aggF')}</span><b>${af}</b></div>`+
-    `<div class="srow"><span>${T('wonSd')}</span><b>${s.sdSeen?`${s.sdWon}/${s.sdSeen} (${pof(s.sdWon,s.sdSeen)})`:'—'}</b></div>`+
-    `<div class="srow"><span>${T('evLeak')}</span><b>${s.evLost?'−'+usd(s.evLost):'$0'}</b></div>`+
+    `<div class="srow"><span>${T('wtsd')}</span><b>${wtsd}</b></div>`+
+    `<div class="srow"><span>${T('wonSd')}</span><b>${s.sdSeen?`${s.sdWon}/${s.sdSeen} (${wsd})`:'—'}</b></div>`+
+    `<div class="srow"><span>${T('evLeak')}</span><b>${s.evLost?'−'+usd(s.evLost):usd(0)}</b></div>`+
     `<div class="srow"><span>${T('coachFollowed')}</span><b>${fp(s)}</b></div>`+
     `<h4 style="margin-top:10px;">${T('lifetime')}</h4>`+
     `<div class="srow"><span>${T('handsPW')}</span><b>${l.hands} / ${l.won}</b></div>`+
@@ -3157,7 +3249,7 @@ function rpRender(){
   /* split action log into street segments using the dealt-card markers */
   const segs=[[]];
   for(const ln of e.actions){
-    if(/^— (Flop|Turn|River):/.test(ln)) segs.push([]);
+    if(/^— (Flop|Turn|River|翻牌|转牌|河牌):/.test(ln)) segs.push([]);
     segs[segs.length-1].push(ln);
   }
   rpStreet=clamp(rpStreet,0,segs.length-1);
@@ -3166,7 +3258,7 @@ function rpRender(){
   const shownLog=segs.slice(0,rpStreet+1).flat();
   const net=e.myNet!=null?e.myNet:0;
   const when=rpAll&&e.t?` · ${new Date(e.t).toLocaleDateString()} ${new Date(e.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`:'';
-  $('rpHandLbl').textContent=`${T('hand')}#${e.hand} (${rpHandIdx+1}/${arr.length}) · ${net>=0?'+':'−'}${usd(Math.abs(net))}${when}`;
+  $('rpHandLbl').textContent=`${localizedHandNumber(e.hand)} (${rpHandIdx+1}/${arr.length}) · ${net>=0?'+':'−'}${usd(Math.abs(net))}${when}`;
   const handNumbers=arr.map(h=>Number(h&&h.hand)).filter(Number.isFinite);
   const currentHand=Number.isFinite(Number(e.hand))?Number(e.hand):rpHandIdx+1;
   const handMin=handNumbers.length?Math.min(...handNumbers):1;
@@ -3325,8 +3417,8 @@ function showActions(p){
   $('foldBtn').disabled=false;
   const minTarget=Math.min(state.currentBet+state.lastRaiseSize, p.bet+p.chips);
   const maxTarget=p.bet+p.chips;
-  const canRaise=maxTarget>state.currentBet&&
-    (typeof opponentsCanRespond!=='function'||opponentsCanRespond(p));
+  const canRaise=typeof canPlayerRaise==='function'?canPlayerRaise(p):
+    maxTarget>state.currentBet&&(typeof opponentsCanRespond!=='function'||opponentsCanRespond(p));
   $('raiseCtl').style.visibility=canRaise?'visible':'hidden';
   if(canRaise){
     const sl=$('raiseSlider');
@@ -3337,7 +3429,6 @@ function showActions(p){
   }
   try{ updateCoach(p); }catch(err){ $('coachBody').innerHTML=`<div class="waiting">${C('coachErr')}</div>`; }
   syncActFab();
-  scheduleLayoutSeats();
 }
 function hideActions(){
   if(!HAS_DOM)return;
@@ -3346,7 +3437,6 @@ function hideActions(){
   coachWait();
   setActBar(false);
   syncActFab();
-  scheduleLayoutSeats();
 }
 function updateRaiseLabel(){
   const v=getRaiseSliderAmt();
@@ -3392,8 +3482,10 @@ function humanAct(type,amount){
   const hs=state.humanHandStats;
   if(hs){
     if(state.stage==='preflop'){
+      if((state.preflopRaiseCount||0)===1&&state.currentBet>state.bb&&!hs.threeBetOpp)hs.threeBetOpp=true;
       if(type==='raise'){hs.vpip=true;hs.pfr=true;}
       else if(type==='call'&&callNow>0)hs.vpip=true;
+      if(type==='raise'&&(state.preflopRaiseCount||0)===1)hs.threeBet=true;
     }else{
       if(type==='raise')hs.aBets++;
       else if(type==='call'&&callNow>0)hs.aCalls++;
@@ -3476,6 +3568,13 @@ function humanAct(type,amount){
 function showNextBtn(autoMs){
   if(!HAS_DOM){ setTimeout(startHand,autoMs); return; }
   clearTimeout(nextTimer);
+  const cash=isCashGame(),needsBuyIn=cash&&state.players[0].chips<=0;
+  if($('topUpBtn'))$('topUpBtn').classList.toggle('hidden',!cash);
+  if(needsBuyIn){
+    $('nextHandBtn').classList.remove('hidden');
+    showBanner(T('topUpRequired'));
+    return;
+  }
   /* auto-advance if auto mode is on, OR if nobody could act this hand (all-in from blinds) —
      waiting for a click when there was nothing to decide is pointless */
   if($('autoNext').checked||state.noActionHand){
@@ -3484,8 +3583,11 @@ function showNextBtn(autoMs){
     $('nextHandBtn').classList.remove('hidden');
   }
 }
-function hideNextBtn(){ if(HAS_DOM){$('nextHandBtn').classList.add('hidden');} clearTimeout(nextTimer); }
-function doNextHand(){ hideNextBtn(); startHand(); }
+function hideNextBtn(){ if(HAS_DOM){$('nextHandBtn').classList.add('hidden');if($('topUpBtn'))$('topUpBtn').classList.add('hidden');} clearTimeout(nextTimer); }
+function doNextHand(){
+  if(isCashGame()&&state.players[0].chips<=0){showBanner(T('topUpRequired'));return;}
+  hideNextBtn(); startHand();
+}
 
 function saveGameRecord(won,place){
   if(BENCH||!state)return;
@@ -3712,7 +3814,7 @@ function showGameOver(won,place){
     ? `<h3 class="bl-clean">${T('cleanGame')}</h3>`
     : `<h3>${T('evTotal')}: −${usd(tot)} (${gd.length} ${T('deviations')})</h3>`+
       gd.slice(0,5).map(d=>
-        `<div class="bl-row"><span>${T('hand')}#${d.hand} · ${d.stage}</span>`+
+        `<div class="bl-row"><span>${localizedHandNumber(d.hand)} · ${reviewStreetLabel(d.stage)}</span>`+
         `<span class="bl-what">${T('coachSaid')} ${recWord(d.rec)} · ${T('youChose')} ${actWord(d.action)}</span>`+
         `<b>−${usd(d.evLoss)}</b></div>`).join('')+
       (gd.length>5?`<div class="bl-more">+ ${gd.length-5} ${T('smallerLeaks')}</div>`:'');
@@ -3743,13 +3845,14 @@ function showCashSessionEnd(){
     ? `<h3 class="bl-clean">${T('cleanGame')}</h3>`
     : `<h3>${T('evTotal')}: −${usd(tot)} (${gd.length} ${T('deviations')})</h3>`+
       gd.slice(0,5).map(d=>
-        `<div class="bl-row"><span>${T('hand')}#${d.hand} · ${d.stage}</span>`+
+        `<div class="bl-row"><span>${localizedHandNumber(d.hand)} · ${reviewStreetLabel(d.stage)}</span>`+
         `<span class="bl-what">${T('coachSaid')} ${recWord(d.rec)} · ${T('youChose')} ${actWord(d.action)}</span>`+
         `<b>−${usd(d.evLoss)}</b></div>`).join('')+
       (gd.length>5?`<div class="bl-more">+ ${gd.length-5} ${T('smallerLeaks')}</div>`:'');
   openDialog($('overlay'),'ovTitle');
 }
 function ordinal(n){const s=['th','st','nd','rd'],v=n%100;return n+(s[(v-20)%10]||s[v]||s[0]);}
+function localizedHandNumber(n){return lang==='zh'?`第 ${n} 手`:`${T('hand')}#${n}`;}
 
 const TABLE_SCENARIO_KEYS={
   balanced:'Balanced',tight:'Tight',loose:'Loose',aggressive:'Aggressive',
@@ -3844,7 +3947,7 @@ function applyLang(){
   if(!HAS_DOM)return;
   const set=(id,k)=>{const el=$(id);if(el)el.textContent=T(k);};
   updateSetupMode(setupGameType);
-  const rowKeys=['modeLbl','players','blinds','buyin','ante','speed','koBonusOpt','timerOpt','language','fourColorDeck','diff','tableStyle'];
+  const rowKeys=['modeLbl','players','blinds','buyin','aiBuyin','ante','speed','koBonusOpt','timerOpt','language','fourColorDeck','diff','tableStyle'];
   document.querySelectorAll('#setup .row label.main').forEach((el,i)=>{if(rowKeys[i])el.textContent=T(rowKeys[i]);});
   const buyLbl=document.querySelectorAll('#setup .row label.main')[3];
   if(buyLbl) buyLbl.textContent=T(setupGameType==='cash'?'stackDepth':'buyin');
@@ -3877,6 +3980,9 @@ function applyLang(){
   set('revTitle','revTitle'); set('revAllHands','revAllHands'); set('revClose','close');
   ['revFilterAll','revFilterCash','revFilterSng'].forEach(id=>set(id,id));
   set('resetLbl','resetData'); set('resetInfo','resetInfo');
+  set('resetPointsBtn','resetPoints');set('topUpBtn','topUp');
+  const mpSection=$('mpSec');if(mpSection)mpSection.classList.toggle('hidden',lang==='zh');
+  ['timerInfoBtn','koBonusInfoBtn','resetInfoBtn'].forEach(id=>{const el=$(id);if(el)el.setAttribute('aria-label',T('whatDoes'));});
   set('mpTitle','mpTitle'); set('mpSub','mpSub'); set('mpCreate','mpCreate'); set('mpJoinBtn','mpJoinB');
   set('adminTitle','adminTitle'); set('adminSub','adminSub');
   set('mpLobbyTitle','mpLobbyTitle'); set('mpCopy','mpCopy'); set('mpFillLbl','mpFillLbl');
@@ -3887,7 +3993,8 @@ function applyLang(){
   const ci=$('chatIn'); if(ci)ci.placeholder=T('chatPh');
   /* topbar */
   const tn=(id,k)=>{const b=$(id);if(b&&b.parentNode.firstChild)b.parentNode.firstChild.nodeValue=T(k);};
-  tn('tLevel','level'); tn('tHand','hand');
+  tn('tLevel','level'); tn('tHand','hand');tn('tBlinds','blinds');tn('tAnte','ante');tn('tPnLVal','sessionPnL');
+  const diffWrap=$('tDiffWrap');if(diffWrap&&diffWrap.firstChild)diffWrap.firstChild.nodeValue=lang==='zh'?'AI：':'AI: ';
   const koTop=$('tKoWrap');
   if(koTop&&koTop.firstChild)koTop.firstChild.nodeValue=T('koBonusOpt')+' ';
   const up=$('tNext');
@@ -3914,12 +4021,16 @@ function applyLang(){
   const af=$('actFab'); if(af)af.textContent=T('actMenu');
   const ch=$('coach').querySelector('h3'); if(ch)ch.textContent=T('liveCoach');
   const w=$('coachBody').querySelector('.waiting'); if(w)w.textContent=T('waiting');
+  const resize=$('coachResize');if(resize)resize.title=lang==='zh'?'拖动调整提示面板宽度':'Drag to resize the coach panel';
+  const emote=$('emoBtn');if(emote)emote.title=T('reactHint');
   $('langSel').value=lang; $('langTop').value=lang;
   syncFourColorDeckUI();
 }
 function setLang(v){
   lang=TR[v]?v:'en';
   try{localStorage.setItem('sg_poker_lang',lang);}catch(e){}
+  if(state)state.cfg.lang=lang;
+  if(typeof setGameDocumentTitle==='function')setGameDocumentTitle(state?.cfg?.gameType||setupGameType);
   applyLang();
   if(state&&state.sessStats) renderStats();
   /* refresh live views if mid-game */
@@ -3980,21 +4091,15 @@ function mpEmote(i){
   }
 }
 /* visible countdown on the acting seat — audible tic-tac for the last 5 seconds */
-let tmrLastTick=0,tmrPrevBank=false,tmrLayoutSeat=-1;
-function syncTimerLayoutSeat(seat){
-  if(tmrLayoutSeat===seat)return;
-  tmrLayoutSeat=seat;
-  scheduleLayoutSeats();
-}
+let tmrLastTick=0,tmrPrevBank=false;
 if(HAS_DOM)setInterval(()=>{
   ttCheck();   // primary expiry enforcement — survives throttled/dropped setTimeouts
   document.querySelectorAll('.tmr').forEach(el=>{if(el.textContent){el.textContent='';el.classList.remove('low');}});
-  if(!state||!state.turnDeadline||state.handOver||state.gameOver){tmrPrevBank=false;syncTimerLayoutSeat(-1);return;}
+  if(!state||!state.turnDeadline||state.handOver||state.gameOver){tmrPrevBank=false;return;}
   const left=Math.ceil((state.turnDeadline-Date.now())/1000);
-  if(left<=0||left>65){tmrPrevBank=!!state.turnBank;syncTimerLayoutSeat(-1);return;}
+  if(left<=0||left>65){tmrPrevBank=!!state.turnBank;return;}
   const el=$('tmr'+state.turnIdx);
   if(el){el.textContent=(state.turnBank?'🏦 ':'⏱ ')+left;el.classList.toggle('low',left<=5);}
-  syncTimerLayoutSeat(el?state.turnIdx:-1);
   const myTurn=state.turnIdx===0&&state.players[0]&&state.players[0].isHuman;
   if(myTurn){
     if(left<=5&&left>=1&&left!==tmrLastTick){tmrLastTick=left;sfx('tick');haptic(20);}
@@ -4034,15 +4139,28 @@ function scheduleCoachScrollHint(){
 }
 
 /* ================= INIT / WIRING ================= */
-let setupGameType='sng';
+let setupGameType='cash';
 function initUI(){
-  let numPlayers=maxSetupPlayers(), difficulty='medium';
+  let savedSettings={};
+  try{savedSettings=JSON.parse(localStorage.getItem('sg_poker_settings_v1')||'{}')||{};}catch(e){}
+  let numPlayers=clamp(Number(savedSettings.numPlayers)||maxSetupPlayers(),6,maxSetupPlayers());
+  let difficulty=['easy','medium','hard'].includes(savedSettings.difficulty)?savedSettings.difficulty:'medium';
+  setupGameType=savedSettings.gameType==='sng'?'sng':'cash';
   $('pCount').textContent=numPlayers;
   setTableCustomCounts(tableScenarioCounts('balanced',numPlayers-1));
+  const savedScenario=normalizeTableScenario(savedSettings.tableScenario);
+  $('tableScenarioSel').value=savedScenario;
+  if(savedScenario==='custom'&&savedSettings.tableCustom)setTableCustomCounts(savedSettings.tableCustom);
+  if($('timerChk'))$('timerChk').checked=!!savedSettings.timer;
+  if(savedSettings.ante!=null&&$('anteSel'))$('anteSel').value=String(savedSettings.ante);
+  if(savedSettings.speed)document.querySelectorAll('input[name=speed]').forEach(input=>{
+    input.checked=input.value===savedSettings.speed;
+  });
+  if($('koBonusChk'))$('koBonusChk').checked=!!savedSettings.koBonus;
   refreshTableScenarioSetup(numPlayers);
   const setSetupPlayerCount=next=>{
     const prevBots=Math.max(1,numPlayers-1);
-    numPlayers=clamp(next,2,maxSetupPlayers());
+    numPlayers=clamp(next,6,maxSetupPlayers());
     $('pCount').textContent=numPlayers;
     if($('tableScenarioSel').value==='custom'&&numPlayers-1!==prevBots)rescaleTableCustom(numPlayers-1);
     refreshTableScenarioSetup(numPlayers);
@@ -4064,6 +4182,7 @@ function initUI(){
     };
     setSelect('startBlind',displayAmount(cfg.startBlind));
     setSelect('startBB',cfg.startBB);
+    setSelect('aiStartBB',cfg.aiStartBB||'mixed');
     if($('timerChk'))$('timerChk').checked=!!cfg.timer;
     difficulty=['easy','medium','hard'].includes(cfg.difficulty)?cfg.difficulty:'medium';
     $('diffSeg').querySelectorAll('button').forEach(button=>{
@@ -4086,6 +4205,10 @@ function initUI(){
     b.onclick=()=>{setupGameType=b.dataset.m; updateSetupMode(setupGameType); refreshResume();};
   });
   updateSetupMode(setupGameType);
+  if(savedSettings.startBlind!=null)$('startBlind').value=String(displayAmount(savedSettings.startBlind));
+  if(savedSettings.startBB!=null)$('startBB').value=String(savedSettings.startBB);
+  if(savedSettings.aiStartBB!=null)$('aiStartBB').value=String(savedSettings.aiStartBB);
+  $('diffSeg').querySelectorAll('button').forEach(button=>button.classList.toggle('on',button.dataset.d===difficulty));
   $('pMinus').onclick=()=>setSetupPlayerCount(numPlayers-1);
   $('pPlus').onclick =()=>setSetupPlayerCount(numPlayers+1);
   window.addEventListener('resize',syncSetupPlayerCap);
@@ -4118,9 +4241,10 @@ function initUI(){
       gameType:setupGameType,
       numPlayers,
       startBB:+$('startBB').value,
+      aiStartBB:$('aiStartBB').value==='mixed'?'mixed':+$('aiStartBB').value,
       startBlind:engineAmount(+$('startBlind').value),
       timer:$('timerChk').checked,
-      difficulty
+      difficulty,lang
     };
     Object.assign(cfg,selectedTableScenarioConfig());
     if(setupGameType==='sng'){
@@ -4128,12 +4252,18 @@ function initUI(){
       cfg.speed=document.querySelector('input[name=speed]:checked').value;
       cfg.koBonus=$('koBonusChk').checked;
     }
+    try{localStorage.setItem('sg_poker_settings_v1',JSON.stringify({
+      gameType:cfg.gameType,numPlayers:cfg.numPlayers,startBB:cfg.startBB,aiStartBB:cfg.aiStartBB,
+      startBlind:cfg.startBlind,difficulty:cfg.difficulty,timer:cfg.timer,
+      tableScenario:cfg.tableScenario,tableCustom:cfg.tableCustom||null,
+      ante:cfg.ante||0,speed:cfg.speed||'standard',koBonus:!!cfg.koBonus
+    }));}catch(e){}
     resetAiCoachReviewHistory();
     logLines=[];
     $('setup').classList.add('hidden');
     $('game').classList.remove('hidden');
     closeDialog($('overlay'));
-    $('tDiff').textContent=difficulty[0].toUpperCase()+difficulty.slice(1);
+    $('tDiff').textContent=T(difficulty);
     newGame(cfg);
     buildSeats();
     hideActions();
@@ -4168,6 +4298,12 @@ function initUI(){
   $('prHalf').onclick=()=>setRaisePotFraction(0.5);
   $('prPot').onclick=()=>setRaisePotFraction(1);
   $('nextHandBtn').onclick=doNextHand;
+  $('topUpBtn').onclick=()=>{
+    if(cashAddBuyIn(state.players[0],1)){
+      showBanner(T('cashRebuy')(usd(100*(state.cfg.startBlind||state.bb))));
+      $('nextHandBtn').classList.remove('hidden');
+    }
+  };
   /* --- language --- */
   $('langSel').onchange=e=>setLang(e.target.value);
   $('langTop').onchange=e=>setLang(e.target.value);
@@ -4263,7 +4399,8 @@ function initUI(){
       localStorage.removeItem('sg_poker_human_model_v2');
     }catch(e){}
     clearResume();
-    Object.assign(lifeStats,{hands:0,won:0,net:0,biggest:0,decisions:0,followed:0});
+    Object.assign(lifeStats,{hands:0,won:0,net:0,biggest:0,decisions:0,followed:0,vpipH:0,pfrH:0,
+      threeBetH:0,threeBetOpp:0,sawFlopH:0,aBets:0,aCalls:0,sdSeen:0,sdWon:0,evLost:0});
     if(state&&typeof aiHumanModelDefault==='function')state.humanModel=aiHumanModelDefault();
     applyRewardCosmetics();
     renderRewardTop();
@@ -4272,6 +4409,14 @@ function initUI(){
     const lbl=$('resetLbl'),old=T('resetData');
     lbl.textContent=T('resetDone');
     setTimeout(()=>{lbl.textContent=T('resetData');},1600);
+  };
+  $('resetPointsBtn').onclick=()=>{
+    if(!confirm(T('resetPointsConfirm')))return;
+    clearResume();
+    try{localStorage.removeItem('sg_poker_bankroll_v1');}catch(e){}
+    refreshResume();
+    $('resetPointsBtn').textContent=T('resetPointsDone');
+    setTimeout(()=>$('resetPointsBtn').textContent=T('resetPoints'),1800);
   };
   $('resumeBtn').onclick=async()=>{
     let sv=typeof loadResumeSnapshot==='function'?await loadResumeSnapshot():refreshResume();
@@ -4283,8 +4428,8 @@ function initUI(){
     renderRewardTop();
   };
   /* --- keyboard shortcuts: F fold · C check/call · R raise · 1-4 sizes · N next hand --- */
-  $('foldBtn').title='Fold (F)'; $('callBtn').title='Check / Call (C)'; $('raiseBtn').title='Raise (R)';
-  $('prThird').title='⅓ pot (1)'; $('prHalf').title='½ pot (2)'; $('prPot').title='Pot (3)'; $('prMax').title='All-in (4)';
+  $('foldBtn').title=`${T('fold')} (F)`; $('callBtn').title=`${T('check')} / ${T('call')} (C)`; $('raiseBtn').title=`${T('raiseW')} (R)`;
+  $('prThird').title=`${T('thirdPot')} (1)`; $('prHalf').title=`${T('halfPot')} (2)`; $('prPot').title=`${T('pot')} (3)`; $('prMax').title=`${T('allin')} (4)`;
   window.addEventListener('keydown',e=>{
     if(e.metaKey||e.ctrlKey||e.altKey)return;
     const tag=((e.target&&e.target.tagName)||'').toLowerCase();
@@ -4306,9 +4451,10 @@ function initUI(){
   $('rpNextS').onclick=()=>{rpStreet++;rpRender();};
   $('rpJump').onsubmit=e=>{e.preventDefault();jumpReplayToHand($('rpHandInput').value);};
   $('rpHandInput').oninput=e=>e.target.setCustomValidity('');
-  $('coachChk').onchange=e=>setCoach(e.target.checked);
-  $('coachToggle').onclick=()=>setCoach(!$('coachChk').checked);
-  $('coachClose').onclick=()=>setCoach(false);
+  const persistCoach=on=>{setCoach(on);try{localStorage.setItem('sg_poker_coach_enabled',on?'1':'0');}catch(e){}};
+  $('coachChk').onchange=e=>persistCoach(e.target.checked);
+  $('coachToggle').onclick=()=>persistCoach(!$('coachChk').checked);
+  $('coachClose').onclick=()=>persistCoach(false);
   /* --- desktop: drag-resize the coach panel --- */
   {
     const cr=$('coachResize'), panel=$('coach');
@@ -4335,7 +4481,9 @@ function initUI(){
     cr.addEventListener('pointerup',end);
     cr.addEventListener('pointercancel',end);
   }
-  setCoach(!isMobile());   // default: docked on desktop, hidden sheet on mobile
+  let coachEnabled=true;
+  try{coachEnabled=localStorage.getItem('sg_poker_coach_enabled')!=='0';}catch(e){}
+  setCoach(coachEnabled);  // enabled by default, while respecting an explicit saved choice
   if(isMobile()){
     const g=$('game');
     ['actFab','actBackdrop','actionbar'].forEach(id=>{

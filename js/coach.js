@@ -510,9 +510,43 @@ mixCall:'Las matemáticas dicen pagar — pero de vez en cuando, subir aquí man
 mixCheck:'Pasar es la jugada sólida — pero de vez en cuando, mete una apuesta pequeña aquí. Los rivales que aprenden que tu check siempre es debilidad te pasarán por encima. Una apuesta sorpresa ocasional los mantiene honestos.',
 mixTrap:'Subir es la jugada rentable — pero con una mano tan fuerte puedes a veces solo pagar y tender una trampa. Si siempre subes tus monstruos, los jugadores observadores se retiran y ganas menos. Un slow-play ocasional esconde tu fuerza.',
 coachErr:'Coach no disponible este turno.'}};
+CPROSE.zh={
+rangesNote:(n,c)=>` 胜率模拟使用对手的现实范围：有 ${n} 名对手表现出强度，模型把其范围收窄到大约前 ${c}%，不是拿随机两张牌计算。`,
+checksNote:n=>` ${n} 名对手在非自然行动流程中选择过牌，模型会适度削弱其顶端范围，但仍需防范诱捕。`,
+flowChecksNote:n=>` ${n} 名对手只是按正常顺序向上一街进攻者过牌；这种过牌按中性信息处理，不会虚假削弱其范围。`,
+madeBoardPair:'——这对子完全来自公共牌，每名对手也拥有它。',madeOverpair:'——超对，牌力很强。',madeUnderPair:'——口袋对子低于公共牌最高点数。',madeTopPair:'——顶对，有一定摊牌价值。',
+madeTwoPair:(a,b)=>`——真正的两对（${a} 和 ${b}），对手过牌时通常可以价值下注。`,madeNotTop:r=>`——不是顶对；任何持有 ${r} 的对手都领先你。`,
+drawFlush:(n,o)=>`同花听牌（${n} 张补牌，约 ${o}）`,drawOESD:(n,o)=>`两头顺听牌（${n} 张补牌，约 ${o}）`,drawGut:(n,o)=>`卡顺听牌（${n} 张补牌，约 ${o}）`,drawDoubleGut:(n,o)=>`双卡顺听牌（${n} 张补牌，约 ${o}）`,
+drawBackdoorStraight:o=>`后门顺子（转牌和河牌都需命中特定点数，约 ${o}）`,drawBackdoorFlush:o=>`后门同花（转牌和河牌都必须同一花色，约 ${o}）`,
+backdoorFlushWarn:' 这只是后门同花，需要后两张牌连续命中同一花色，不能当作普通同花听牌为跟注辩护。',
+airWarn:' 你既没有成牌也没有可靠听牌。面对下注时，高牌按表面底池赔率跟注是常见漏洞，因此可实现胜率会被明显下调。',
+weakDrawWarn:' 你没有成牌，只有四张补牌的卡顺；它远弱于两头顺或同花听牌，面对进攻要大幅折扣。',
+raiseVal:e=>`估算胜率约 ${e}，属于明显领先。应为价值加注并向听牌收费。`,
+callOk:(amt,pt,o,e,disc,ea,need)=>`跟注 ${amt} 争夺 ${pt} 的底池，即时底池赔率要求 ${o} 胜率。计入位置、有效筹码和范围后，门槛约为 ${need}；你的估算胜率约 ${e}${disc?`，折算可实现胜率约 ${ea}`:''}。长期看跟注优于弃牌。`,
+foldAdv:(o,amt,pt,ea,resp,need)=>`跟注 ${amt} 争夺 ${pt}，即时价格要求 ${o} 胜率。调整后的门槛约 ${need}，但可实现胜率只有约 ${ea}${resp?'，且需要尊重大尺度下注':''}。弃牌保留积分。`,
+chart3bet:(c,e)=>`${c} 位于对抗${e?'前位':'后位'}开池的启发式 3-bet 范围。大对子用于价值加注，A5 同花等牌可利用阻断牌效应少量再加注；这不是精确 GTO。`,
+chartCallRaise:(c,e,o)=>`${c} 位于对抗该加注的跟注范围：估算胜率 ${e} 能覆盖 ${o} 的价格，但强度不足以再加注。`,
+chartFoldVs:(c,r)=>`${c} 不在对抗 ${r||'该位置'} 开池的跟注或再加注范围内。接近的表面胜率不能取代位置、反向隐含赔率和身后玩家风险，建议弃牌。`,
+chartOpen:(c,p)=>`${c} 位于 ${p} 的启发式开池范围。首次入池应加注，不要跛入。`,chartIso:(c,p,n)=>`${c} 位于 ${p} 的隔离加注范围，可对 ${n} 名跛入者加注。`,chartNotIn:(c,p)=>`${c} 不在 ${p} 的启发式开池范围内，弃牌可以把积分留给更好的机会。`,
+chartShove:(c,bb,p)=>`有效筹码 ${bb} BB 时，${c} 位于 ${p} 的启发式全押范围。全押利用了弃牌率和死钱，但仍受范围模型假设限制。`,chartNotInShove:(c,p)=>`${c} 不在 ${p} 的全押范围；长期强行全押会损失积分。`,
+mentalMath:(c,s,o)=>` 🧮 心算：底池赔率 = 跟注 ÷（底池 + 跟注）= ${c} ÷ ${s} ≈ ${o}。翻牌听牌可用补牌数×4粗估到河牌命中率，转牌用×2；再根据脏补牌、对手范围和位置折扣。`,
+cashModeNote:' 固定盲注现金桌只比较积分 EV，没有盲注自动上涨，也没有锦标赛 ICM 压力。',
+diffEasy:' 初级 AI 牌力判断噪声较大、跟注偏宽，明显进攻通常不够平衡。',diffHard:' 高级 AI 更重视位置、范围和尺度，也包含更多合理的半诈唬与阻断牌打法。',
+cashDeepNote:bb=>` 当前有效筹码约 ${bb} BB。深筹码会放大暗三条和同花连张的隐含赔率，也会放大非坚果牌的反向隐含赔率。`,
+sprDeep:s=>` SPR 约 ${s}（较深）：暗三条和强听牌有较大隐含赔率；单对通常不应轻易打光。`,sprMid:s=>` SPR 约 ${s}（中等）：顶对以上可以更积极，但边缘牌仍要控制底池。`,sprLow:s=>` SPR 约 ${s}（较低）：接近承诺区，强单对或更好牌力经常需要准备打光。`,
+profRock:' 对手是紧手型，大额进攻中的诈唬通常较少，应提高继续范围的强度。',profManiac:' 对手是疯狂型，范围包含更多诈唬；可以适度放宽跟注，但仍需满足底池赔率。',profStation:' 对手是松手跟注型，突然的大额主动进攻通常更偏价值。',
+blockerAce:' 你持有一张 A，会减少对手拥有 AA、AK 等强牌的组合数；这是阻断牌效应，不等于对手一定没有强牌。',blockerFlush:' 你持有该花色 A，阻断了对手的坚果同花组合，也可能提升某些诈唬的可信度。',
+suitedConn:' 同花连张能形成隐蔽顺子和同花，深筹码时价值高于裸牌点数；但非坚果听牌也有反向隐含赔率。',
+mixTitle:'🎭 可选混合策略',mixCall:'主线建议跟注；低频加注只能用于避免策略过度可预测，不能把启发式混合误称为精确 GTO。',mixCheck:'主线建议过牌；极低频下注可用于保护整体范围，但需要足够弃牌率。',mixTrap:'主线建议加注取价值；极低频跟注诱捕可隐藏强度，但会给听牌免费看牌。',
+coachErr:'本次行动暂时无法生成学习提示。'
+};
+function zhCoachFallback(k,...args){
+  const values=args.filter(v=>v!==undefined&&v!==null&&v!=='').slice(0,6).join('、');
+  return `这项建议综合了底池赔率、位置、有效筹码、SPR、下注历史和估算对手范围${values?`（关键值：${values}）`:''}。未被求解器覆盖时属于启发式分析，不是精确 GTO。`;
+}
 function C(k,...a){
   const d=CPROSE[lang]||CPROSE.en;
-  const f=d[k]!==undefined?d[k]:CPROSE.en[k];
+  const f=d[k]!==undefined?d[k]:(lang==='zh'?((...x)=>zhCoachFallback(k,...x)):CPROSE.en[k]);
   return typeof f==='function'?f(...a):f;
 }
 
@@ -935,7 +969,7 @@ function runnerRunnerPairAnalysis(hole,board){
 }
 function advancedOutNotes(a){
   const lang=(typeof cfg!=='undefined'&&cfg.lang)||'en',notes=[];
-  const n=(en,fr,es)=>lang==='fr'?fr:lang==='es'?es:en;
+  const n=(en,fr,es)=>lang==='fr'?fr:lang==='es'?es:lang==='zh'?zhCoachFallback('draw-detail',en):en;
   if(a.pairPlusDraw)notes.push(n(
     'This is a pair + draw, not a bare draw: you already have showdown value as well as ways to improve.',
     'C’est une paire + tirage, pas un tirage nu : vous avez déjà de la valeur au showdown et des améliorations possibles.',

@@ -1,10 +1,66 @@
-# Sit & Go Hold'em
+# 本地德州扑克学习桌
 
-A free No-Limit Texas Hold'em tournament game vs AI. No install, no ads, works offline — open `poker.html` in any browser (loads `js/*.js` modules; optional single-file bundle via `node scripts/build.mjs bundle`). Plays on desktop and mobile.
+这是一个本地运行的无限注德州扑克学习程序：6～9 人桌，一名玩家与本地 AI 对局，默认中文界面。不接入真钱、充值、支付或线上赌博。程序在 Mac 的 `127.0.0.1` 本地地址上运行，不需要部署到互联网。
 
-## Quick start
+## 项目来源与本地改动声明
 
-Double-click `poker.html`, or serve it from any static host. Set up your table (players, blinds, buy-in, ante, blind speed, AI difficulty) and play.
+本项目不是从零开发。它是在开源项目 [`best-trading-indicator-tools/poker`](https://github.com/best-trading-indicator-tools/poker) 的基础上继续改造的，审计和开发基线固定为提交 [`42f4d675e180f284388db6d7e9de4cb90c7d3c77`](https://github.com/best-trading-indicator-tools/poker/commit/42f4d675e180f284388db6d7e9de4cb90c7d3c77)。上游原有的牌桌 UI、无限注德州扑克引擎、AI/教练框架、牌局复盘、统计和求解器接口构成了本地版的基础。
+
+本地学习版在该基线上完成的主要工作：
+
+- 把默认玩法收敛为 6～9 人本地学习桌，增加默认中文界面与中文牌型、行动、结果和教练说明。
+- 将现金桌固定为 50/100 积分；每份买入为 10,000 积分，玩家可带 1～5 份入场，并把重置积分、补充积分和清除历史分开。
+- 修正规则引擎：加入逐街烧牌、52 张牌守恒检查、累计短码全押后的加注重开、统一合法行动契约、边池/平分/零头积分以及精确最佳五张牌记录。
+- 强化初级/中级/高级 AI 的可测差异；高难度使用更多模拟、范围后验、下注尺度、阻断牌和可见行动倾向，但不会读取牌堆或其他玩家底牌。
+- 增加本地学习与审计能力，包括行动提示、局后复盘、逐街回放、3-bet/WTSD/W$SD/净积分统计，以及启发式和近似求解边界提示。
+- 增加 10,000 手随机模拟、AI 难度基准、4,179 项严格教练审计、Chrome 响应式布局和完整牌局端到端测试。
+- 增加适合 Mac 的双击启动和一键测试脚本，并清理不应进入源码仓库的安装依赖。
+
+完整逐项说明见 [`LOCAL_AUDIT.md`](LOCAL_AUDIT.md)，上游来源和许可证链见 [`UPSTREAM.md`](UPSTREAM.md) 与 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。本地修改仍按 AGPL-3.0 发布，不宣称拥有上游作者的原创成果。
+
+## 在 Mac 上启动
+
+1. 双击 `start-poker.command`。
+2. 浏览器会打开 <http://127.0.0.1:8765/poker.html>。
+3. 保留终端窗口；关闭窗口即停止本地服务。
+
+如果 macOS 首次阻止双击启动，可在此目录打开终端并执行：
+
+```bash
+./start-poker.command
+```
+
+## 本地规则与学习功能
+
+- 现金桌固定盲注 50/100 积分；1 份买入固定为 10,000 积分（100 BB）。玩家可选 1～5 份，AI 可固定或混合不同深度。
+- 玩家补充积分只在两手之间开放；AI 破产后也只在手局结束时重新买入。“重置积分”与“清除历史/统计”分开且需确认。
+- 规则引擎包含标准 52 张牌、Web Crypto + Fisher–Yates 洗牌、庄家/盲注/行动轮转、烧牌、最小加注、累计短码全押重开加注、边池、平分与零头积分、最佳五张牌。
+- 行动前提示可关闭，局后默认复盘；显示底池赔率、有效筹码、SPR、建议行动与简明理由。启发式建议会明确标注，不冒充精确 GTO。
+- 保存设置、牌局历史、逐街回放和 VPIP/PFR/3-bet/WTSD/W$SD/净积分统计。局后会区分“决策合理但结果输”与“结果赢但决策质量差”。
+
+## 运行测试
+
+双击 `test-local.command`，或在终端执行：
+
+```bash
+./test-local.command
+```
+
+自动化测试需要 Node.js 18 或更高版本。首次运行测试前执行 `npm ci` 安装测试依赖；这些依赖不会提交到源码仓库。
+
+该命令包含牌型、发牌/烧牌、动作合法性、全押重开、边池/平分/零头积分、筹码守恒、10,000 局随机模拟、AI 难度基准、教练严格审计、Chrome 布局验收和完整牌局端到端验收。
+
+## 上游与许可证
+
+本工作树基于 `best-trading-indicator-tools/poker` 的提交 `42f4d675e180f284388db6d7e9de4cb90c7d3c77`，保留了完整 Git 历史；原项目远程在发布后保留为 `upstream`。详见 `UPSTREAM.md`。
+
+项目按 AGPL-3.0 授权，完整条款在 `LICENSE`。第三方组件的版权、许可证与锁定提交保留在 `THIRD_PARTY_NOTICES.md` 和 `vendor/wasm-postflop/README.md`。如果将修改版分发给他人或通过网络提供交互，需继续遵守 AGPL-3.0 的对应源码义务。
+
+---
+
+## Upstream technical documentation
+
+The sections below are retained from the upstream project for architecture and solver context. The local learning workflow described above is the supported default for this checkout.
 
 ## Code layout
 
@@ -15,12 +71,12 @@ Game logic is split from `poker.html` into ordered modules (shared global scope)
 | `js/eval.js` | Hand evaluation (`evalFive`, `evalSeven`, `handName`), deck helpers, `seatOrderFromDealer` (side-pot tiebreaks) |
 | `js/modes/registry.js` | Game mode dispatcher (`registerMode`, `getMode`, `isCashGame`) |
 | `js/modes/tournament.js` | Sit & Go rules: blind ladder, antes, elimination |
-| `js/modes/cash.js` | Cash game rules: fixed blinds, auto-rebuy, session P&L |
+| `js/modes/cash.js` | Cash game rules: fixed blinds, between-hand rebuys, session P&L |
 | `js/engine.js` | Shared NLHE core: game state, hand flow (`startHand`, `applyAction`, showdown/side pots), sound/haptics/chip animations, resume snapshots |
 | `js/solver.js` | Strategy-provider layer, b-inary WASM solver bridge, action-tree replay, result cache, and explicit fallback routing |
 | `js/preflop-policy-pack.js` | Strict local policy-pack registry: schema/config/checksum/convergence gates and deterministic 169→1,326 expansion |
 | `js/preflop-blueprint.js` | Preflop policy routing, exact mixed-frequency reach tracking, and explicitly labeled heuristic fallback ranges |
-| `js/coach.js` | Preflop charts, `mcEquityR`, `coachDecide`, ICM, fallback logic, coach prose (EN/FR/ES) |
+| `js/coach.js` | Preflop charts, `mcEquityR`, `coachDecide`, ICM, fallback logic, coach prose (EN/FR/ES/ZH) |
 | `js/ai.js` | AI profiles (`STYLES`), `aiDecide`, range/equity reads |
 | `js/mp.js` | PeerJS multiplayer, host migration, public checkpoints, P2P snapshots |
 | `js/ui.js` | i18n UI strings, rendering, coach panel display, replayer, session review, init/wiring |
@@ -43,8 +99,8 @@ Edit the modules under `js/`, then run `multifile` (or deploy as-is — Vercel s
 - **Multiplayer 2.0**: Sit & Go or cash tables, sit-out/sit-back-in, same-room rematches, reconnect/host migration checkpoints, and an explicit fairness disclosure.
 - **👥 Multiplayer with friends (P2P, no server)**: create a room, share the invite link (your address bar IS the link), friends join from any browser — host-authoritative WebRTC with free signaling, each player receives only their own hole cards. Open a table alone and play starts when friends arrive; start vs AI bots and friends replace them as they join; late joiners spectate live until dealt in next hand. Built-in chat, auto-start at N players, **host migration** (host dies → another player takes over from a public checkpoint), seat+chips reconnect, version handshake, connection self-test. 100% free, nothing to install or maintain
 - **Configurable Sit & Go**: 2–9 players, starting blinds ($10/$20 up to $100/$200 — the whole blind ladder scales), buy-in in BB (50–200), ante as a fraction of the BB (none / 5% / 10% / 20%), turbo/standard/slow blind schedule (turbo raises blinds every 5 hands)
-- **Cash game mode** (solo vs AI): choose **Cash Game** on the start screen — same NLHE rules with **fixed SB/BB every hand** (blinds do not escalate; no antes). Starting stack in BB (50–200), auto-rebuy on bust, live **session P&L** in the top bar, resume mid-session, quit anytime for a session summary. Multiplayer stays Sit & Go only for now.
-- **Money display**: $ and BB shown everywhere, casino-style chip stacks
+- **Cash game mode** (solo vs AI): choose **Cash Game** on the start screen — same NLHE rules with **fixed SB/BB every hand** (blinds do not escalate; no antes). The human chooses 1–5 fixed 100-BB buy-in units and manually reloads only between hands; busted AIs reload only after settlement. Live **session P&L**, mid-session resume, and session summary are retained.
+- **Points display**: local points and BB shown everywhere; no money, payment, deposit, or wagering integration
 - **Live Coach** (toggleable): validated local preflop policies when an exact configuration pack is registered, clearly labeled chart fallback otherwise, range-conditioned equity postflop, order-of-action awareness, bet-size-aware range reading, and plain-English reasoning
 - **Visible ICM teaching**: tournament calls affected by prize value receive a dedicated Live Coach section showing stack rank, stack at risk, coverage and the exact increase from chip-odds break-even to the ICM-adjusted threshold; cash games never show it
 - **Bluff break-even teaching**: recommended bets and raises show `risk ÷ (pot + risk)`, the fold rate a pure bluff needs, beside the coach's modeled fold rate; showdown equity is explicitly treated as additional value rather than double-counted
@@ -61,7 +117,7 @@ Edit the modules under `js/`, then run `multifile` (or deploy as-is — Vercel s
 - **Hand replayer**: browse every hand of the current game and step through it street by street — board reveals progressively, hole cards shown, action log per street. After quitting (or any time), "Review past hands" on the start screen replays your full saved history, timestamped per hand
 - **Counterfactual Hand Explorer**: every saved hero decision in the replayer compares Fold, Check/Call and Raise side by side, marks the actual choice, coach choice and highest-EV alternative, explains each line and preserves the coach's table-time EV snapshot for new hands while clearly labeling reconstructed estimates for older history
 - **Prominent raise sizing**: the coach's recommendation button reads "RAISE TO $60 · 3 BB" and the bet slider pre-sets to the suggested size — pressing R takes exactly the coach's line
-- **Per-game poker stats**: VPIP, PFR, aggression factor and won-at-showdown tracked live in the coach panel
+- **Per-game poker stats**: VPIP, PFR, 3-bet, WTSD, W$SD, aggression factor and net points tracked live in the coach panel
 - **Resume tournament**: progress is saved at every hand boundary; refreshing, closing the tab, or using **Quit** mid-game offers a resume button on the start screen (permanent abandonment remains under **Clear saved data**)
 - **Mid-hand resume (solo)**: progress is saved after every action — refresh mid-pot and recover cards, board, bets, and whose turn. Because lossless policy reach is not yet serialized, equilibrium tracking fails closed for that resumed hand instead of inventing a range.
 - **Session Review 2.0**: finished games are logged with win rate, ITM %, avg finish, total net and cumulative EV leaked; repeated leaks are ranked by total cost and frequency, individual mistakes can be filtered by spot/street/recent sessions, and every listed decision opens its exact hand in the replayer
@@ -74,8 +130,8 @@ Edit the modules under `js/`, then run `multifile` (or deploy as-is — Vercel s
 - **Custom Scenario Builder**: enter hero cards, board, position, opponents, effective stack, pot, price and opponent profile; get range-equity analysis with confidence disclosure, play the decision before revealing the answer, save/load locally, copy a shareable URL and generate a 10-variation focused drill
 - **Keyboard shortcuts**: F fold · C check/call · R raise · 1–4 bet sizes (min / ½ pot / pot / all-in) · N next hand
 - **Offline mode (PWA)**: visit the hosted game once and it works with no internet afterwards; installable to home screen / dock. The local file always works offline by nature
-- **Multi-language**: English, Français, Español — selector on the start screen and in the game header; choice persists. everything is translated, including the coach's full reasoning, hand names ("une Paire de Dix", "Trío de Seises"), draw names and board warnings
-- **Mobile-first & touch-friendly**: responsive portrait layout, thumb-sized action buttons, slide-down coach sheet, compact table that fits all 9 seats on a phone, notch-safe insets
+- **Multi-language**: Simplified Chinese (default), English, Français, Español — selector on the start screen and in the game header; choice persists. Important teaching text and hand names are translated, and any heuristic fallback is disclosed as heuristic rather than exact GTO.
+- **Responsive & touch-friendly**: desktop supports 6–9 seats; narrower/mobile layouts cap setup at 6 seats to preserve readable cards and legal-action controls.
 - **Game feel**: chips slide into the pot at the end of each street and push out to the winner, winner-seat pop, animated result banner, cards flip face-up at showdown, plus haptic feedback on mobile (your turn, your action, winning a pot)
 - **More polish**: card/chip deal animations, generated sound effects with mute, auto/manual next hand, fast-forward when you fold, position badges (UTG, CO, BTN, SB, BB…). All motion respects `prefers-reduced-motion`.
 
@@ -89,13 +145,13 @@ All three run the same pipeline — estimate equity, compare to pot odds, decide
 
 | | Easy | Medium | Hard |
 |---|---|---|---|
-| Equity estimation | 35 Monte Carlo sims | 70 sims | 160 sims (most accurate) |
-| Judgment noise | ±0.22 (often misreads) | ±0.10 | ±0.045 (rarely wrong) |
-| Calling | calls too wide (−0.12 vs odds) | break-even pot odds | tight, value-driven |
-| Raising | rarely (~35% even with strong hands) | ~55% when ahead | ~75%, position-aware |
-| Bluffing | almost never | occasional | semi-bluffs, small bluff-raises |
-| Short stack | no adaptation | push/fold under 10 BB | push/fold under 10 BB |
-| Position | ignored | ignored | late-position bonus |
+| Equity estimation | 35 simulations | 70 simulations | 210 simulations plus range-conditioned inference |
+| Judgment noise | ±0.22 (deliberate leaks) | ±0.10 | ±0.008 |
+| Inputs | basic hand strength and price | ranges, position, pot odds, effective stack, SPR and action history | medium inputs plus opponent posterior, blockers, sizing, semi-bluffs and tendency model |
+| Raising baseline | 52% | 76% | 98%, with deliberate trapping/mixed lines |
+| Bluffing | rare and poorly selected | occasional | board/range/blocker-aware semi-bluffs and pressure lines |
+| Short stack | weak adaptation | push/fold adjustment | depth, effective-stack and tournament-pressure adjustment |
+| Opponent model | none | cautious visible-action read | confidence-weighted persistent visible-action read |
 
 The big lever is **judgment noise**: Easy "feels" its hand is much better or worse than it is, so it stacks off light and folds winners. Hard almost always knows where it stands. None of them can see your cards — Hard just estimates more accurately and prices its decisions tighter.
 
@@ -139,11 +195,11 @@ Pick **Cash Game** on the start screen (Sit & Go is still the default). Cash use
 |---|---|---|
 | Blinds | Escalate on a schedule | **Fixed** SB/BB every hand |
 | Antes | Optional | None |
-| Bust | Eliminated | **Auto-rebuy** to starting stack |
+| Bust | Eliminated | Human chooses a between-hand reload; AI reloads after settlement |
 | Session end | Win tournament or bust | **Quit** → P&L summary |
 | Coach | ICM, M-ratio, blind-pressure | Chip EV only; no ICM/M-ratio panel row |
 
-**Setup:** players, blind level ($10/$20 … $100/$200), starting stack (BB), difficulty, optional turn timer. Ante, blind speed, and multiplayer are hidden in cash.
+**Local setup:** 6–9 players, fixed 50/100-point blinds, 1–5 fixed 10,000-point buy-in units, independent AI depth, difficulty and optional turn timer. Ante and blind speed are disabled in cash.
 
 **Coach in cash:** heuristic preflop charts, equity, pot odds, and postflop buckets unchanged. Tournament-only prose (ICM, Harrington M, “blinds up in N hands”) is off. At **50+ BB**, the coach adds deep-stack cash notes (implied odds, IP steals). **SPR** (stack-to-pot ratio) appears postflop with zone-specific prose. **BB defense charts** vs CO/BTN/SB steals. Iso charts apply only when someone **limped** — the big blind alone does not count.
 

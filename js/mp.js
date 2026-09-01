@@ -5,13 +5,6 @@
 let MP=null;
 const MP_V='mp7';   // protocol version — both sides must match
 function mpMaxPlayers(){ return typeof maxSetupPlayers==='function'?maxSetupPlayers():9; }
-function mpLateJoinCapacity(){
-  if(!state||state.gameOver)return 0;
-  const bots=state.players.filter(p2=>!p2.isHuman&&!p2.remote&&!p2.out).length;
-  const empty=Math.max(0,mpMaxPlayers()-state.players.length);
-  const reserved=MP&&MP.pending?MP.pending.length:0;
-  return Math.max(0,bots+empty-reserved);
-}
 /* STUN + free TURN relays: lets phones on cellular/strict NATs reach the host */
 const MP_ICE={config:{iceServers:[
   {urls:['stun:stun.l.google.com:19302','stun:global.stun.twilio.com:3478']},
@@ -110,7 +103,7 @@ function mpHostData(conn,d){
         return;
       }
       /* game running: queue the player — they get dealt in at the next hand */
-      if(mpLateJoinCapacity()>0){
+      if(state&&!state.gameOver&&state.players.length+(MP.pending?MP.pending.length:0)<mpMaxPlayers()){
         (MP.pending=MP.pending||[]).push({conn,name:(''+d.n).slice(0,14)});
         try{conn.send({t:'wait'});}catch(e){}
         mpChatAll('🛜',C2('mpKnock',d.n));

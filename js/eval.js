@@ -3,6 +3,8 @@ const HAS_DOM = (typeof document !== 'undefined');
 let lang = 'en';
 /* localized rank & hand names */
 const RANK_I18N={
+zh:{nm:{2:'二',3:'三',4:'四',5:'五',6:'六',7:'七',8:'八',9:'九',10:'十',11:'J',12:'Q',13:'K',14:'A'},
+    pl:{2:'二',3:'三',4:'四',5:'五',6:'六',7:'七',8:'八',9:'九',10:'十',11:'J',12:'Q',13:'K',14:'A'}},
 fr:{nm:{2:'Deux',3:'Trois',4:'Quatre',5:'Cinq',6:'Six',7:'Sept',8:'Huit',9:'Neuf',10:'Dix',11:'Valet',12:'Dame',13:'Roi',14:'As'},
     pl:{2:'Deux',3:'Trois',4:'Quatre',5:'Cinq',6:'Six',7:'Sept',8:'Huit',9:'Neuf',10:'Dix',11:'Valets',12:'Dames',13:'Rois',14:'As'}},
 es:{nm:{2:'Dos',3:'Tres',4:'Cuatro',5:'Cinco',6:'Seis',7:'Siete',8:'Ocho',9:'Nueve',10:'Diez',11:'Jota',12:'Dama',13:'Rey',14:'As'},
@@ -112,6 +114,26 @@ function evalBest(cards){
   }
   return best;
 }
+/* Return both the winning score and the exact five cards that make it.  This
+   is separate from evalBest so equity simulations that need only a score do
+   not allocate another result object on every sample. */
+function bestFive(cards){
+  if(!Array.isArray(cards)||cards.length<5||cards.length>7)return null;
+  let bestScore=null,bestCards=null;
+  const consider=five=>{
+    const score=evalFive(five);
+    if(!bestScore||cmpScore(score,bestScore)>0){bestScore=score;bestCards=five;}
+  };
+  if(cards.length===5)consider(cards.slice());
+  else if(cards.length===7){
+    for(const idx of COMBOS_7_5)consider(idx.map(i=>cards[i]));
+  }else{
+    for(let a=0;a<cards.length-4;a++)for(let b=a+1;b<cards.length-3;b++)
+      for(let c=b+1;c<cards.length-2;c++)for(let d=c+1;d<cards.length-1;d++)
+        for(let e=d+1;e<cards.length;e++)consider([cards[a],cards[b],cards[c],cards[d],cards[e]]);
+  }
+  return {score:bestScore,cards:bestCards};
+}
 /* True when the named made-hand category is materially created or improved by
    at least one hole card. Board-only pairs/trips/straights are not credited as
    private made hands merely because a hole-card kicker plays. */
@@ -141,6 +163,17 @@ function boardTwoPairKickerInfo(hole,board){
 function handName(s){
   const nm=rankNm(s[1]),pl=rankPl(s[1]),pl2=rankPl(s[2]);
   const flushRanks=s.slice(1,6).map(r=>RANK_CH[r]).join('-');
+  if(lang==='zh') switch(s[0]){
+    case 8: return s[1]===14?'皇家同花顺':`${nm}高同花顺`;
+    case 7: return `${pl}四条`;
+    case 6: return `${pl}葫芦（带${pl2}）`;
+    case 5: return `${flushRanks} 同花`;
+    case 4: return `${nm}高顺子`;
+    case 3: return `${pl}三条`;
+    case 2: return `${pl}和${pl2}两对`;
+    case 1: return `${pl}一对`;
+    default:return `${nm}高牌`;
+  }
   if(lang==='fr') switch(s[0]){
     case 8: return s[1]===14?'une Quinte Flush Royale':`une Quinte Flush, hauteur ${nm}`;
     case 7: return `un Carré de ${pl}`;

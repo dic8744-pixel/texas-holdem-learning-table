@@ -75,26 +75,6 @@ const result=vm.runInContext(`(()=>{
     throw new Error('multiplayer bot profiles missing');
   if(state.players[1].style||state.players[2].style)throw new Error('remote humans received bot profiles');
 
-  const sevenRemotes=Array.from({length:7},(_,i)=>({name:'Remote '+(i+1),seat:i+2}));
-  newGame({...base,numPlayers:9,tableScenario:'balanced',mpRemotes:sevenRemotes});
-  state.players[1].chips=25;
-  const lateJoinMessages=[];
-  const lateJoinConn={open:true,send:d=>lateJoinMessages.push(d),close:()=>{}};
-  MP={role:'host',started:true,conns:[],pending:[],myName:'Host'};
-  mpHostData(lateJoinConn,{t:'hello',n:'Invited friend',v:MP_V});
-  if(MP.pending.length!==1||lateJoinMessages[0]?.t!=='wait')
-    throw new Error('full bot table rejected an invited human '+JSON.stringify(lateJoinMessages));
-  if(mpLateJoinCapacity()!==0)
-    throw new Error('a pending human did not reserve the last replaceable bot seat');
-  mpSeatPending();
-  const replacement=state.players[1];
-  if(state.players.length!==9||replacement.name!=='Invited friend'||!replacement.remote||replacement.style||MP.conns[0]?.seat!==1)
-    throw new Error('invited human did not replace the shortest-stacked bot');
-  if(lateJoinMessages.map(d=>d.t).join(',')!=='wait,start')
-    throw new Error('invited human received the wrong join sequence '+JSON.stringify(lateJoinMessages));
-  const lateJoinReplacement={seat:replacement.i,name:replacement.name,players:state.players.length};
-  MP=null;
-
   for(const id of ['balanced','tight','loose','aggressive','wild','custom']){
     for(const bots of [1,2,3,5,8]){
       const counts=tableScenarioCounts(id,bots,id==='custom'?tableCustom:null);
@@ -125,7 +105,7 @@ const result=vm.runInContext(`(()=>{
     throw new Error('cash-game table amounts must use the current fixed BB');
   state.bb=1000;
   const screenshotExample=usd(2000)+' · '+bbs(2000);
-  if(screenshotExample!=='$400 · 2 BB')
+  if(screenshotExample!=='400 pts · 2 BB')
     throw new Error('current-BB conversion regression '+screenshotExample);
 
   const soundKinds=['preview','deal','chip','fold','check','tick','alert','win','xp','bigwin','levelup','ko','bounty'];
@@ -192,7 +172,7 @@ const result=vm.runInContext(`(()=>{
   if(visibleCounterfactuals.length!==1||visibleCounterfactuals[0].stage!=='flop')
     throw new Error('solver decisions must not receive heuristic counterfactual explanations');
 
-  return {actual,balanced,custom,fallback,randomIds,multiplayerBots:multiplayerBots.map(p=>p.style.id),lateJoinReplacement,
+  return {actual,balanced,custom,fallback,randomIds,multiplayerBots:multiplayerBots.map(p=>p.style.id),
     blindDisplay,raisedBlindDisplay,tournamentBlinds,cashBlinds,screenshotExample,
     soundPacks:Object.fromEntries(soundPacks.map(pack=>[pack,soundKinds.length])),replayJumps,
     adaptivePlan:{priority:planBefore.map(r=>r.spot),masteryBefore:planBefore[1].mastery,masteryAfter:pfAfter.mastery},
@@ -202,17 +182,15 @@ const result=vm.runInContext(`(()=>{
 assert.ok(result);
 const html=fs.readFileSync(path.join(ROOT,'poker.html'),'utf8');
 const blindSetup=html.match(/<select id="startBlind">([\s\S]*?)<\/select>/)?.[1]||'';
-const blindOptions=[...blindSetup.matchAll(/<option value="(\d+)"[^>]*>\$(\d+) \/ \$(\d+)<\/option>/g)]
+const blindOptions=[...blindSetup.matchAll(/<option value="(\d+)"[^>]*>(\d+) \/ (\d+) 积分<\/option>/g)]
   .map(([,value,sb,bb])=>({value:Number(value),sb:Number(sb),bb:Number(bb)}));
-assert.equal(blindOptions.length,4,'expected four starting-blind options');
-assert.match(blindSetup,/<option value="20" selected>\$10 \/ \$20<\/option>/,
-  'the starting-blind selector must default to $10 / $20');
+assert.equal(blindOptions.length,1,'cash learning table must expose one fixed 50/100 blind option');
 for(const option of blindOptions){
-  assert.equal(option.value,option.bb,'starting-blind option values must be display-dollar amounts');
+  assert.equal(option.value,option.bb,'starting-blind option values must be display-point amounts');
   assert.equal(option.sb,option.bb/2,'starting-blind labels must use a 1:2 blind ratio');
 }
-assert.equal(vm.runInContext('usd(engineAmount(100))',context),'$100',
-  'a $100 setup big blind must display as $100 at the table');
+assert.equal(vm.runInContext('usd(engineAmount(100))',context),'100 pts',
+  'a 100-point setup big blind must display as 100 points at the table');
 assert.equal(vm.runInContext('raiseTargetByBigBlind(400,1,100,300,1000)',context),500,
   'increase control must add exactly one big blind');
 assert.equal(vm.runInContext('raiseTargetByBigBlind(400,-1,100,300,1000)',context),300,

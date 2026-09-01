@@ -55,6 +55,7 @@ function tableScenarioStyleIds(cfg,n){
   return shuffle(ids);
 }
 function profileLabel(style){
+  if(lang==='zh'&&style)return ({rock:'紧手',station:'松手',shark:'激进',maniac:'疯狂'})[style.id]||'AI';
   const label=style&&style.label?String(style.label):'';
   return label.replace(/[A-Za-zÀ-ÖØ-öø-ÿ]/,c=>c.toUpperCase());
 }
@@ -77,7 +78,7 @@ const fmt=n=>n.toLocaleString('en-US');
 const DISPLAY_AMOUNT_DIVISOR=5;
 const displayAmount=n=>Math.round(Number(n)/DISPLAY_AMOUNT_DIVISOR);
 const engineAmount=n=>Math.round(Number(n)*DISPLAY_AMOUNT_DIVISOR);
-const usd=n=>'$'+fmt(displayAmount(n));
+const usd=n=>lang==='zh'?fmt(displayAmount(n))+' 积分':fmt(displayAmount(n))+' pts';
 /* Table amounts are always expressed in the current live big blind. */
 function bbs(n){const v=n/state.bb;return (v>=20?Math.round(v):Math.round(v*10)/10)+' BB';}
 const money=n=>usd(n)+' · '+bbs(n);
@@ -86,7 +87,7 @@ const money=n=>usd(n)+' · '+bbs(n);
 let state=null;
 
 function setGameDocumentTitle(gameType){
-  if(HAS_DOM)document.title=gameType==='cash'?"Cash Game Hold'em":"Sit & Go Hold'em";
+  if(HAS_DOM)document.title=lang==='zh'?'本地德州扑克学习桌':(gameType==='cash'?"Cash Game Hold'em":"Sit & Go Hold'em");
 }
 
 function newGame(cfg){
@@ -97,7 +98,7 @@ function newGame(cfg){
   const startBlind=cfg.startBlind||BASE_BB;
   const mode=getMode(cfg);
   state={
-    cfg, levels:[startBlind], level:0, handNum:0, board:[], stage:null, deck:[],
+    cfg, levels:[startBlind], level:0, handNum:0, board:[], burned:[], stage:null, deck:[],cardInvariantActive:false,
     currentBet:0, lastRaiseSize:0, streetRaiseCount:0, preflopRaiseCount:0, turnIdx:0, players:[],
     gameOver:false, bb:startBlind, sb:startBlind/2, ante:0, handOver:false,
     humanModel:typeof aiLoadHumanModel==='function'?aiLoadHumanModel():
@@ -105,11 +106,13 @@ function newGame(cfg){
   };
   mode.initState(cfg,state);
   const stack=cfg.startBB*startBlind;
-  const mk=(i,name,avatar,isHuman)=>({i,name,avatar,isHuman,chips:stack,hole:[],folded:false,out:false,allIn:false,bet:0,totalBet:0,acted:false,lastAct:'',lastActionType:'',lastActionStreet:'',revealed:false,place:0,bank:TT_BANK});
-  state.players.push(mk(0, cfg.allAI?'Bot-You':'You', '😎', !cfg.allAI));
+  const mk=(i,name,avatar,isHuman,initialStack=stack)=>({i,name,avatar,isHuman,chips:initialStack,initialBuyIn:initialStack,hole:[],folded:false,out:false,allIn:false,bet:0,totalBet:0,acted:false,actedAtBet:0,lastAct:'',lastActionType:'',lastActionStreet:'',revealed:false,place:0,bank:TT_BANK});
+  state.players.push(mk(0, cfg.allAI?'Bot-You':(lang==='zh'?'你':'You'), '😎', !cfg.allAI));
   const names=shuffle(AI_NAMES.map((n,k)=>[n,AI_AVATARS[k]]));
   for(let k=1;k<cfg.numPlayers;k++){
-    const q=mk(k,names[k-1][0],names[k-1][1],false);
+    const botBB=cfg.aiStartBB==='mixed'||cfg.aiStartBB==null
+      ?(100*(1+gameRandomInt(5))):Math.max(100,Number(cfg.aiStartBB)||100);
+    const q=mk(k,names[k-1][0],names[k-1][1],false,botBB*startBlind);
     q.style=STYLES[0];
     state.players.push(q);
   }
@@ -124,7 +127,7 @@ function newGame(cfg){
   const styleIds=tableScenarioStyleIds(cfg,profileBots.length);
   profileBots.forEach((q,i)=>{q.style=STYLES.find(s=>s.id===styleIds[i])||STYLES[0];});
   state.sessStats={hands:0,won:0,net:0,biggest:0,decisions:0,followed:0,
-    vpipH:0,pfrH:0,aBets:0,aCalls:0,sdSeen:0,sdWon:0,evLost:0};
+    vpipH:0,pfrH:0,threeBetH:0,threeBetOpp:0,sawFlopH:0,aBets:0,aCalls:0,sdSeen:0,sdWon:0,evLost:0};
   state.gameId=Date.now();
   state.rewardStartStack=stack;
   state.rewardMinHeroChips=stack;
@@ -242,13 +245,14 @@ function startHand(){
     const opp=liveStart.find(p=>p.i!==0);
     if(opp&&state.players[0].chips<opp.chips) state.rewardHeadsUpTrailed=true;
   }
-  state.board=[]; state.stage='preflop'; state._rangeComboInfoCache=Object.create(null);
+  state.board=[]; state.burned=[]; state.showdownBestFive=new Map(); state.stage='preflop'; state._rangeComboInfoCache=Object.create(null);
   state._rangeHandClassCache=Object.create(null); state._rangeBoardTextureCache=Object.create(null);
   state.streetRaiseCount=0; state.preflopRaiseCount=0;
   state.deck=shuffle(makeDeck());
+  state.cardInvariantActive=true;
   for(const p of state.players){
     p.hole=[]; p.folded=p.out||p.sittingOut; p.allIn=false; p.bet=0; p.totalBet=0;
-    p.acted=false; p.lastAct=''; p.lastActionType=''; p.lastActionStreet=''; p.revealed=false;
+    p.acted=false; p.actedAtBet=0; p.lastAct=''; p.lastActionType=''; p.lastActionStreet=''; p.revealed=false;
     p.rangeCap=1; p.rangeFloor=0; p.checkedStreet=false;p.aiPlan=null;
     p.aggStreets=[]; p.checkStreets=[]; p.inFlowCheckStreets=[]; p.lineRead=''; p.rangeModel=null;
   }
@@ -263,11 +267,14 @@ function startHand(){
   payBet(state.players[sbIdx],state.sb); state.players[sbIdx].lastAct='SB '+usd(state.sb);
   payBet(state.players[bbIdx],state.bb); state.players[bbIdx].lastAct='BB '+usd(state.bb);
   state.currentBet=state.bb; state.lastRaiseSize=state.bb;
-  for(const p of alive()) p.hole=[state.deck.pop(),state.deck.pop()];
+  /* Deal one card around the table twice, exactly as a physical hold'em deal. */
+  for(let round=0;round<2;round++)for(const p of alive())p.hole.push(state.deck.pop());
+  state.handChipTotal=state.players.reduce((sum,p)=>sum+p.chips+p.totalBet,0);
+  assertCardConservation('hole cards');
   if(typeof gtoPreflopBeginHand==='function')gtoPreflopBeginHand();
   /* per-hand trackers */
   state.handLog=[]; state.humanDecisions=[]; state.humanWonAmt=0; state.resultText='';
-  state.humanHandStats={vpip:false,pfr:false,aBets:0,aCalls:0,sd:false,sdWon:false};
+  state.humanHandStats={vpip:false,pfr:false,threeBet:false,threeBetOpp:false,sawFlop:false,aBets:0,aCalls:0,sd:false,sdWon:false};
   state.noActionHand=false;
   state.pfAggIdx=-1; state.lastAggIdx=-1;
   state.lastPotAwards=[];
@@ -280,7 +287,9 @@ function startHand(){
   state.humanPlayed=!state.players[0].out;
   prevBoardLen=0; coachRecNow=null;
   sfx('deal');
-  log(`— Hand #${state.handNum} · blinds ${usd(state.sb)}/${usd(state.bb)}${state.ante?' ante '+usd(state.ante):''} —`);
+  log(lang==='zh'
+    ?`— 第 ${state.handNum} 手 · 盲注 ${usd(state.sb)}/${usd(state.bb)}${state.ante?' 前注 '+usd(state.ante):''} —`
+    :`— Hand #${state.handNum} · blinds ${usd(state.sb)}/${usd(state.bb)}${state.ante?' ante '+usd(state.ante):''} —`);
   showBanner('');
   hideNextBtn();
   const first=nextSeat(bbIdx,p=>!p.out&&!p.folded&&!p.allIn);
@@ -374,18 +383,84 @@ function opponentsCanRespond(p){
   return inHand().some(q=>q!==p&&!q.allIn&&q.chips>0);
 }
 
+/* A full raise reopens action immediately. Multiple short all-ins also reopen
+   action once their cumulative increase reaches the last full raise size. */
+function canPlayerRaise(p){
+  if(!p||p.out||p.folded||p.allIn||p.chips<=0||!opponentsCanRespond(p))return false;
+  if(p.bet+p.chips<=state.currentBet)return false;
+  if(!p.acted)return true;
+  return state.currentBet-(Number.isFinite(p.actedAtBet)?p.actedAtBet:state.currentBet)>=state.lastRaiseSize;
+}
+
+/* Public action contract for the UI, AIs and tests. Amounts are absolute
+   "raise-to" totals. A short all-in may be below minRaiseTo. */
+function legalActions(p){
+  if(!p||p.out||p.folded||p.allIn||p.chips<=0)return {
+    fold:false,check:false,call:false,bet:false,raise:false,allIn:false,
+    callAmount:0,minRaiseTo:0,maxRaiseTo:0
+  };
+  const callAmount=Math.max(0,Math.min(state.currentBet-p.bet,p.chips));
+  const maxRaiseTo=p.bet+p.chips;
+  const raiseOpen=canPlayerRaise(p);
+  return {
+    fold:callAmount>0,
+    check:callAmount===0,
+    call:callAmount>0,
+    bet:state.currentBet===0&&raiseOpen,
+    raise:state.currentBet>0&&raiseOpen,
+    allIn:maxRaiseTo<=state.currentBet?callAmount>0:raiseOpen,
+    allInIsRaise:maxRaiseTo>state.currentBet,
+    callAmount,
+    minRaiseTo:state.currentBet+state.lastRaiseSize,
+    maxRaiseTo
+  };
+}
+
+function assertCardConservation(where='hand'){
+  if(!state||!state.cardInvariantActive||!Array.isArray(state.deck))return true;
+  const cards=[...state.deck,...(state.burned||[]),...(state.board||[])];
+  for(const p of state.players||[])cards.push(...(p.hole||[]));
+  /* Unit tests and the scenario builder also use isolated betting states with
+     no physical deal. They are outside the 52-card hand invariant. */
+  if(cards.length===0)return true;
+  if(cards.length!==52)throw new Error(`card conservation failed at ${where}: ${cards.length}/52`);
+  const ids=cards.map(c=>c&&`${c.r}:${c.s}`);
+  if(ids.some(id=>id==='undefined:undefined')||new Set(ids).size!==52)
+    throw new Error(`duplicate or invalid card at ${where}`);
+  return true;
+}
+
+function assertChipConservation(where='hand'){
+  if(!state||!Number.isFinite(state.handChipTotal))return true;
+  const total=state.players.reduce((sum,p)=>sum+p.chips+p.totalBet,0);
+  if(total!==state.handChipTotal)throw new Error(`chip conservation failed at ${where}: ${total} != ${state.handChipTotal}`);
+  return true;
+}
+
 function applyAction(p,type,amt){
+  if(!p||p.out||p.folded||p.allIn)throw new Error('illegal actor');
+  if(!['fold','check','call','bet','raise','allin'].includes(type))throw new Error(`illegal action: ${type}`);
   if(p.bankInUse){p.bank=Math.max(0,(p.bank||0)-(Date.now()-p.bankInUse));p.bankInUse=0;state.turnBank=false;}
   /* Visible-action sample used by the coach's opponent-read confidence label. */
   if(!p.isHuman)p.observedActions=(p.observedActions||0)+1;
   const callAmt=Math.max(0,Math.min(state.currentBet-p.bet,p.chips));
+  if(type==='check'){
+    if(callAmt>0)throw new Error(`illegal check: ${callAmt} to call`);
+    type='call';
+  }else if(type==='bet'){
+    if(state.currentBet>0)throw new Error('illegal bet: use raise when a wager already exists');
+    type='raise';
+  }else if(type==='allin'){
+    amt=p.bet+p.chips;
+    type=amt>state.currentBet?'raise':'call';
+  }
   if(type==='fold'&&callAmt<=0) type='call'; // checking is the only legal zero-price fold alternative
   /* Chips cannot be raised into an opponent who is already all-in: with no
      live stack able to respond, a raise is only a call written incorrectly. */
   if(type==='raise'&&!opponentsCanRespond(p))type='call';
   /* A short all-in increases the price but does not reopen raising for players
      who already acted. A full raise resets their acted flag below. */
-  if(type==='raise'&&p.acted)type='call';
+  if(type==='raise'&&!canPlayerRaise(p))type='call';
   const cbBefore=state.currentBet;   // bet level BEFORE this action (for line reading)
   const potBefore=state.players.reduce((s,q)=>s+q.totalBet,0);
   const streetBetsBefore=state.players.reduce((s,q)=>s+q.bet,0);
@@ -414,10 +489,11 @@ function applyAction(p,type,amt){
     inFlowAggressorPos:flowAggressor?.pos||''};
   if(typeof aiObserveAction==='function')aiObserveAction(p,type,rangeCtx);
   if(type==='fold'){
-    p.folded=true; p.lastAct='Fold'; sfx('fold');
+    p.folded=true; p.lastAct=lang==='zh'?'弃牌':'Fold'; sfx('fold');
   }else if(type==='call'){
     const paid=payBet(p,callAmt);
-    p.lastAct = callAmt<=0 ? 'Check' : (p.allIn?'All-in '+usd(p.bet):'Call '+usd(paid));
+    p.lastAct = callAmt<=0 ? (lang==='zh'?'过牌':'Check')
+      : (p.allIn?(lang==='zh'?'全押到 ':'All-in ')+usd(p.bet):(lang==='zh'?'跟注 ':'Call ')+usd(paid));
     sfx(callAmt<=0?'check':'chip');
     rangeCtx.betRatio=callAmt>0?callAmt/Math.max(rangeCtx.potBefore-callAmt,state.bb):0;
     rangeCtx.facedBetRatio=rangeCtx.betRatio;
@@ -437,7 +513,8 @@ function applyAction(p,type,amt){
       }
     }
   }else if(type==='raise'){
-    let target=Math.min(amt,p.bet+p.chips);
+    let target=Math.min(Number(amt),p.bet+p.chips);
+    if(!Number.isFinite(target))target=state.currentBet;
     const minTarget=state.currentBet+state.lastRaiseSize;
     if(target<minTarget) target=Math.min(minTarget,p.bet+p.chips);
     if(target<=state.currentBet){ // can't actually raise -> treat as call
@@ -457,7 +534,7 @@ function applyAction(p,type,amt){
       for(const q of state.players) if(q!==p&&!q.folded&&!q.allIn&&!q.out) q.acted=false;
     }
     state.currentBet=target;
-    p.lastAct=(p.allIn?'All-in ':'Raise to ')+usd(target);
+    p.lastAct=(p.allIn?(lang==='zh'?'全押到 ':'All-in '):(lang==='zh'?'加注到 ':'Raise to '))+usd(target);
     sfx('chip');
     /* read the LINE: what does this bet mean in the context of the whole hand? */
     p.lineRead='';
@@ -501,7 +578,10 @@ function applyAction(p,type,amt){
   p.lastActionType=type==='call'?(callAmt<=0?'check':'call'):type;
   p.lastActionStreet=state.stage;
   p.acted=true;
+  p.actedAtBet=state.currentBet;
   log(`${p.name}: ${p.lastAct}`);
+  assertCardConservation('action');
+  assertChipConservation('action');
   saveResume();
   render();
 }
@@ -539,7 +619,7 @@ function endRound(){
   const pause=fastFwd()?160:hadBets?700:600;
   later(async()=>{
     if(!state||state.gameOver||state.handOver)return;
-    for(const p of state.players){p.bet=0;p.acted=false;p.checkedStreet=false;}
+    for(const p of state.players){p.bet=0;p.acted=false;p.actedAtBet=0;p.checkedStreet=false;}
     state.currentBet=0; state.lastRaiseSize=state.bb; state.streetRaiseCount=0;
     const live=inHand();
     if(live.length===1) return endHandFold();
@@ -555,10 +635,18 @@ function endRound(){
 }
 
 function dealNext(){
+  const burn=state.deck.pop();
+  if(!burn)throw new Error('deck exhausted before burn card');
+  state.burned.push(burn);
   if(state.stage==='preflop'){ state.board.push(state.deck.pop(),state.deck.pop(),state.deck.pop()); state.stage='flop'; }
   else if(state.stage==='flop'){ state.board.push(state.deck.pop()); state.stage='turn'; }
   else if(state.stage==='turn'){ state.board.push(state.deck.pop()); state.stage='river'; }
-  log(`— ${state.stage[0].toUpperCase()+state.stage.slice(1)}: ${state.board.map(c=>RANK_CH[c.r]+SUIT_CH[c.s]).join(' ')} —`);
+  else throw new Error(`cannot deal after ${state.stage}`);
+  if(state.stage==='flop'&&state.humanHandStats&&!state.players[0].folded)state.humanHandStats.sawFlop=true;
+  assertCardConservation(state.stage);
+  const streetName=lang==='zh'?({flop:'翻牌',turn:'转牌',river:'河牌'})[state.stage]
+    :state.stage[0].toUpperCase()+state.stage.slice(1);
+  log(`— ${streetName}: ${state.board.map(c=>RANK_CH[c.r]+SUIT_CH[c.s]).join(' ')} —`);
   sfx('deal');
 }
 
@@ -566,7 +654,7 @@ function runout(){
   const live=inHand();
   state.lastAllInSweat=live.some(p=>p.isHuman&&!p.folded)&&live.some(p=>p.allIn);
   for(const p of live) p.revealed=true;
-  if(state.lastAllInSweat&&!fastFwd()) showBanner('ALL-IN SWEAT');
+  if(state.lastAllInSweat&&!fastFwd()) showBanner(lang==='zh'?'全押跑牌':'ALL-IN SWEAT');
   render();
   const d=fastFwd()?Math.min(RUNOUT_DELAY,320):(state.lastAllInSweat?Math.round(RUNOUT_DELAY*1.35):RUNOUT_DELAY);
   const step=()=>{
@@ -590,10 +678,13 @@ function endHandFold(){
     contributorIds:state.players.filter(p=>p.totalBet>0).map(p=>p.i)
   }];
   for(const p of state.players){ p.totalBet=0; p.bet=0; }
-  state.resultText=`${w.name} ${w.isHuman?'win':'wins'} ${money(pot)} (everyone folded)`;
+  assertCardConservation('fold settlement');
+  assertChipConservation('fold settlement');
+  state.resultText=lang==='zh'?`${w.name}获得 ${money(pot)}（其他人均已弃牌）`
+    :`${w.name} ${w.isHuman?'win':'wins'} ${money(pot)} (everyone folded)`;
   if(w.isHuman){state.humanWonAmt=pot;sfx('win');haptic([14,40,14]);}
   log(state.resultText);
-  showBanner(`${w.name} ${w.isHuman?'win':'wins'} ${money(pot)}`);
+  showBanner(lang==='zh'?`${w.name}获得 ${money(pot)}`:`${w.name} ${w.isHuman?'win':'wins'} ${money(pot)}`);
   render([w]);
   setTimeout(()=>animatePotToWinner([w]),300);
   finishHand(FOLDWIN_PAUSE);
@@ -606,19 +697,30 @@ function showdown(){
     live.some(p=>p.isHuman&&!p.folded)&&live.some(p=>p.allIn)
   );
   for(const p of live) p.revealed=true;
-  const scores=new Map();
-  for(const p of live) scores.set(p,evalSeven(p.hole.concat(state.board)));
+  const scores=new Map(),exactBest=new Map();
+  for(const p of live){
+    const best=bestFive(p.hole.concat(state.board));
+    exactBest.set(p,best.cards);
+    scores.set(p,best.score);
+  }
+  state.showdownBestFive=exactBest;
   const awards=settleShowdownPots(state.players,live,scores,state.dealerIdx);
   const winnings=awards.winnings;
   state.lastPotAwards=awards.pots;
   const mainWinners=awards.mainWinners;
   for(const [w,amt] of winnings)w.chips+=amt;
   for(const p of state.players) p.totalBet=0;
+  assertCardConservation('showdown');
+  assertChipConservation('showdown');
   const parts=[];
   for(const [w,amt] of winnings){
     if(amt<=0) continue;
-    parts.push(`${w.name} ${w.isHuman?'win':'wins'} ${money(amt)} with ${handName(scores.get(w))}`);
-    log(`${w.name} ${w.isHuman?'win':'wins'} ${money(amt)} — ${handName(scores.get(w))}`);
+    const five=exactBest.get(w).map(c=>RANK_CH[c.r]+SUIT_CH[c.s]).join(' ');
+    parts.push(lang==='zh'
+      ?`${w.name}获得 ${money(amt)}，${handName(scores.get(w))}（最佳五张：${five}）`
+      :`${w.name} ${w.isHuman?'win':'wins'} ${money(amt)} with ${handName(scores.get(w))} (best five: ${five})`);
+    log(lang==='zh'?`${w.name}获得 ${money(amt)} — ${handName(scores.get(w))}，最佳五张 ${five}`
+      :`${w.name} ${w.isHuman?'win':'wins'} ${money(amt)} — ${handName(scores.get(w))}, best five ${five}`);
   }
   state.resultText=parts.join(' · ');
   const hw=winnings.get(state.players[0])||0;
@@ -664,7 +766,7 @@ function settleShowdownPots(players,live,scores,dealerIdx){
       winnings.set(w,(winnings.get(w)||0)+add);
     }
     pots.push({amount:amt,winnerIds:winners.map(w=>w.i),contributorIds});
-    mainWinners=winners;
+    if(pots.length===1)mainWinners=winners;
     prev=lvl;
   }
   return {winnings,pots,mainWinners};
@@ -696,7 +798,8 @@ function finishHand(pause){
       seat:q.i,name:q.name,avatar:q.avatar,hole:q.hole.slice(),pos:q.pos||'',isHero:q.i===0,
       profile:q.style?.id||(q.remote?'human':'neutral'),startChips:state.handStartStacks?.[q.i],
       chipsAfter:q.chips,folded:q.folded&&!q.isHuman||q.folded,
-      won:state.resultText.includes(q.name+' win')
+      bestFive:(state.showdownBestFive?.get(q)||[]).slice(),
+      won:(state.lastPotAwards||[]).some(pot=>(pot.winnerIds||[]).includes(q.i))
     }))
   };
   /* stats + coach feedback */
@@ -706,10 +809,13 @@ function finishHand(pause){
     const hs=state.humanHandStats||{};
     const sd=state.players.filter(q=>q.hole.length>0&&!q.folded).length>=2;
     if(sd&&!state.players[0].folded){hs.sd=true;if(state.humanWonAmt>0)hs.sdWon=true;}
-    {
-      const S=state.sessStats;
+    for(const S of [state.sessStats,lifeStats]){
+      if(!S)continue;
       if(hs.vpip)S.vpipH=(S.vpipH||0)+1;
       if(hs.pfr)S.pfrH=(S.pfrH||0)+1;
+      if(hs.threeBet)S.threeBetH=(S.threeBetH||0)+1;
+      if(hs.threeBetOpp)S.threeBetOpp=(S.threeBetOpp||0)+1;
+      if(hs.sawFlop)S.sawFlopH=(S.sawFlopH||0)+1;
       S.aBets=(S.aBets||0)+(hs.aBets||0); S.aCalls=(S.aCalls||0)+(hs.aCalls||0);
       if(hs.sd){S.sdSeen=(S.sdSeen||0)+1;if(hs.sdWon)S.sdWon=(S.sdWon||0)+1;}
     }
@@ -770,9 +876,10 @@ function finishHand(pause){
       board:state.board.map(cs),
       players:lastHand.players.map(q=>({seat:q.seat,name:q.name,avatar:q.avatar,pos:q.pos,isHero:q.isHero,
         profile:q.profile,startChips:q.startChips,chipsAfter:q.chipsAfter,
-        cards:q.hole.map(cs),folded:q.folded,won:q.won})),
+        cards:q.hole.map(cs),bestFive:(q.bestFive||[]).map(cs),folded:q.folded,won:q.won})),
       heroStartChips:state.humanStart,heroEndChips:state.players[0].chips,
-      myNet:net, my:{vpip:!!hs.vpip,pfr:!!hs.pfr,aBets:hs.aBets||0,aCalls:hs.aCalls||0,sd:!!hs.sd,sdWon:!!hs.sdWon},
+      myNet:net, my:{vpip:!!hs.vpip,pfr:!!hs.pfr,threeBet:!!hs.threeBet,threeBetOpp:!!hs.threeBetOpp,
+        sawFlop:!!hs.sawFlop,aBets:hs.aBets||0,aCalls:hs.aCalls||0,sd:!!hs.sd,sdWon:!!hs.sdWon},
       myDecisions:state.humanDecisions.slice(),
       result:state.resultText, actions:lastHand.log.slice()
     };
@@ -964,7 +1071,8 @@ function animatePotToWinner(winners){
 /* ================= STATS (persist across sessions) ================= */
 function loadStats(){
   try{const s=JSON.parse(localStorage.getItem('sg_poker_stats'));if(s&&typeof s.hands==='number')return s;}catch(e){}
-  return {hands:0,won:0,net:0,biggest:0,decisions:0,followed:0};
+  return {hands:0,won:0,net:0,biggest:0,decisions:0,followed:0,vpipH:0,pfrH:0,
+    threeBetH:0,threeBetOpp:0,sawFlopH:0,aBets:0,aCalls:0,sdSeen:0,sdWon:0,evLost:0};
 }
 let lifeStats=loadStats();
 function saveStats(){try{localStorage.setItem('sg_poker_stats',JSON.stringify(lifeStats));}catch(e){}}
@@ -1133,13 +1241,13 @@ function saveResume(){
       rewardKos:state.rewardKos||0, rewardWasHeadsUp:!!state.rewardWasHeadsUp,
       rewardHeadsUpTrailed:!!state.rewardHeadsUpTrailed,
       gameSeries:(gameSeries||[]).slice(),
-      players:state.players.map(q=>({name:q.name,avatar:q.avatar,chips:q.chips,out:q.out,place:q.place||0,
+      players:state.players.map(q=>({name:q.name,avatar:q.avatar,chips:q.chips,initialBuyIn:q.initialBuyIn,out:q.out,place:q.place||0,
         style:q.style?q.style.id:null,rangeTendencies:q.rangeTendencies?{...q.rangeTendencies}:null})),
       ...getMode().resumeFields(state)
     };
     if(!state.handOver&&state.stage){
       snap.midHand={
-        stage:state.stage, board:state.board.map(cardToCode), deck:state.deck.map(cardToCode),
+        stage:state.stage, board:state.board.map(cardToCode), burned:(state.burned||[]).map(cardToCode), deck:state.deck.map(cardToCode),
         currentBet:state.currentBet, lastRaiseSize:state.lastRaiseSize,
         streetRaiseCount:state.streetRaiseCount||0, preflopRaiseCount:state.preflopRaiseCount||0, turnIdx:state.turnIdx,
         level:state.level, bb:state.bb, sb:state.sb, ante:state.ante,
@@ -1150,7 +1258,7 @@ function saveResume(){
         humanHandStats:state.humanHandStats?{...state.humanHandStats}:null,
         players:state.players.map(q=>({
           hole:q.hole.map(cardToCode), pos:q.pos||'', bet:q.bet, totalBet:q.totalBet,
-          folded:q.folded, allIn:q.allIn, acted:q.acted, lastAct:q.lastAct||'',
+          folded:q.folded, allIn:q.allIn, acted:q.acted, actedAtBet:q.actedAtBet||0, lastAct:q.lastAct||'',
           lastActionType:q.lastActionType||'',lastActionStreet:q.lastActionStreet||'',
           revealed:q.revealed, rangeCap:q.rangeCap, rangeFloor:q.rangeFloor,
           rangeModel:packResumeRangeModel(q.rangeModel),
@@ -1172,7 +1280,9 @@ function restoreMidHand(mh){
   state.handOver=false;
   state.level=mh.level; state.bb=mh.bb; state.sb=mh.sb; state.ante=mh.ante;
   state.board=codesToCards(mh.board);
+  state.burned=codesToCards(mh.burned);
   state.deck=codesToCards(mh.deck);
+  state.cardInvariantActive=true;
   state.stage=mh.stage;
   state.currentBet=mh.currentBet;
   state.lastRaiseSize=mh.lastRaiseSize;
@@ -1186,7 +1296,7 @@ function restoreMidHand(mh){
   state.humanStart=mh.humanStart??state.players[0].chips;
   state.handStartStacks=(mh.handStartStacks||state.players.map(p=>p.chips+p.totalBet)).slice();
   state.humanPlayed=mh.humanPlayed??true;
-  state.humanHandStats=mh.humanHandStats||{vpip:false,pfr:false,aBets:0,aCalls:0,sd:false,sdWon:false};
+  state.humanHandStats=mh.humanHandStats||{vpip:false,pfr:false,threeBet:false,threeBetOpp:false,sawFlop:false,aBets:0,aCalls:0,sd:false,sdWon:false};
   /* A policy pack's private reach state and a postflop tree are not serialized.
      Resuming must therefore fail closed instead of silently rebuilding a root
      policy from already-mutated stacks or attaching a mislabeled solver. */
@@ -1204,7 +1314,7 @@ function restoreMidHand(mh){
     const p=state.players[i]; if(!p)return;
     p.hole=codesToCards(q.hole);
     p.bet=q.bet; p.totalBet=q.totalBet;
-    p.folded=q.folded; p.allIn=q.allIn; p.acted=q.acted;
+    p.folded=q.folded; p.allIn=q.allIn; p.acted=q.acted; p.actedAtBet=q.actedAtBet||0;
     p.lastAct=q.lastAct||''; p.lastActionType=q.lastActionType||'';
     p.lastActionStreet=q.lastActionStreet||''; p.revealed=q.revealed;
     p.pos=q.pos||'';
@@ -1219,6 +1329,8 @@ function restoreMidHand(mh){
     p.lineRead=q.lineRead||'';
     p.bank=q.bank??TT_BANK;
   });
+  state.handChipTotal=state.players.reduce((sum,p)=>sum+p.chips+p.totalBet,0);
+  assertCardConservation('resume');
   showBanner(T('revMidBanner'));
   hideNextBtn();
   render();
@@ -1229,7 +1341,7 @@ function applyResumeSnapshot(sv){
   $('setup').classList.add('hidden');
   $('game').classList.remove('hidden');
   closeDialog($('overlay'));
-  $('tDiff').textContent=sv.cfg.difficulty[0].toUpperCase()+sv.cfg.difficulty.slice(1);
+  $('tDiff').textContent=T(sv.cfg.difficulty);
   newGame(sv.cfg);
   state.gameId=sv.gameId||state.gameId;
   if(sv.humanModel)state.humanModel=typeof aiHumanModelNormalize==='function'?aiHumanModelNormalize(sv.humanModel):sv.humanModel;
@@ -1248,7 +1360,7 @@ function applyResumeSnapshot(sv){
   }catch(e){}
   sv.players.forEach((q,i)=>{
     const p=state.players[i]; if(!p)return;
-    p.name=q.name; p.avatar=q.avatar; p.chips=q.chips; p.out=q.out; p.place=q.place||0;
+    p.name=q.name; p.avatar=q.avatar; p.chips=q.chips;p.initialBuyIn=q.initialBuyIn||p.initialBuyIn; p.out=q.out; p.place=q.place||0;
     if(q.style) p.style=STYLES.find(s=>s.id===q.style)||p.style;
     p.rangeTendencies=q.rangeTendencies?{...q.rangeTendencies}:p.rangeTendencies;
   });
